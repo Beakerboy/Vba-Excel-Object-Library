@@ -11,6 +11,8 @@ api = {
                 "min": {
                     "name": "min",
                     "type": "function",
+                    "project": "excel",
+                    "module": "worksheetfunction",
                     "handle": getattr(WorksheetFunction, "min"),
                 }
             }
