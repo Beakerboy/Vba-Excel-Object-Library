@@ -1,4 +1,4 @@
-import vba_excel_obj_lib.worksheet_function
+import vba_excel_obj_lib.worksheet_function as worksheet_function
 
 
 def test_min() -> None:
