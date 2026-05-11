@@ -4,13 +4,15 @@ api = {
     "name": "excel",
     "type": "project",
     "modules": {
-        "name": "worksheetfunction",
-        "type": "module",
-        "functions": {
-            "msgbox": {
-                "name": "min",
-                "type": "function",
-                "handle": getattr(WorksheetFunction, "min"),
+        "worksheetfunction": {
+            "name": "worksheetfunction",
+            "type": "module",
+            "functions": {
+                "min": {
+                    "name": "min",
+                    "type": "function",
+                    "handle": getattr(WorksheetFunction, "min"),
+                }
             }
         }
     }
