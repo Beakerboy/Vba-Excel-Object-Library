@@ -30,7 +30,10 @@ def test_average_ints() -> None:
 
 
 def test_average_mix() -> None:
-    assert WorksheetFunction.average(vba_types.VBAArray(vba_types.VBAInteger(1), vba_types.VBAInteger((2), vba_types.VBAInteger(3)) == vba_types.VBADouble(2.0)
+    assert WorksheetFunction.average(
+        vba_types.VBAArray(vba_types.VBAInteger(1), vba_types.VBAInteger(2)),
+        vba_types.VBAInteger(3)
+    ) == vba_types.VBADouble(2.0)
 
 
 def stdev() -> None:
