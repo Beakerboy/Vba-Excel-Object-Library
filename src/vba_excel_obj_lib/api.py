@@ -14,6 +14,18 @@ api = {
                     "project": "excel",
                     "module": "worksheetfunction",
                     "handle": getattr(WorksheetFunction, "min"),
+                     "params": [
+                         {
+                            "name": "arg1",
+                            "optional": False,
+                            "default": ""
+                        },
+                        {
+                            "name": "arg2",
+                            "optional": True,
+                            "default": ""
+                        }
+                     ]
                 }
             }
         }
