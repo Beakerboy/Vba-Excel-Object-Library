@@ -6,7 +6,13 @@ from typing import Any
 class WorksheetFunction:
     @staticmethod
     def average(*args: Any) -> vba_types.VBADouble:
-        arr = np.array(args._data)
+        vals = []
+        for arg in args:
+            if isinstance(arg, vba_types.VBAArray):
+                vals.extend(arg)
+            else:
+                vals.append(arg.value)
+        arr = np.array(vals)
         return arr.average()
 
     @staticmethod
