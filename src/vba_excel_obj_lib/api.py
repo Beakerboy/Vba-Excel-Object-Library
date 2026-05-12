@@ -8,7 +8,7 @@ args = [arg1]
 i = 2
 for n in range(29):
     args.append({
-        "name": "arg2",
+        "name": "arg" + i,
         "optional": True,
         "default": ""
     })
