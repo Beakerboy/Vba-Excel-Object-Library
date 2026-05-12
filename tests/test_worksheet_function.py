@@ -6,11 +6,13 @@ from vba_excel_obj_lib.worksheet_function import WorksheetFunction
 array_of_ints = vba_types.VBAArray(vba_types.VBAInteger(1),
                                    vba_types.VBAInteger(2),
                                    vba_types.VBAInteger(3))
+
+
 @pytest.mark.parametrize(
     "input, expected", [
         (array_of_ints, vba_types.VBADouble(3.0)),
     ])
-def test_max(input, expected) -> None:
+def test_max(input: int, expected: int) -> None:
     result = WorksheetFunction.max(input)
     assert result == expected
 
@@ -24,9 +26,12 @@ def test_average_array() -> None:
 
 
 def test_average_ints() -> None:
-    assert WorksheetFunction.average(vba_types.VBAInteger(1),
-                                     vba_types.VBAInteger(2),
-                                     vba_types.VBAInteger(3)) == vba_types.VBADouble(2.0)
+    result = WorksheetFunction.average(
+      vba_types.VBAInteger(1),
+      vba_types.VBAInteger(2),
+      vba_types.VBAInteger(3)
+    )
+    assert result == vba_types.VBADouble(2.0)
 
 
 def test_average_mix() -> None:
