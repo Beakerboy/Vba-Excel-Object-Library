@@ -1,4 +1,4 @@
-from .worksheet_function import worksheet_function
+from .worksheet_function import api as worksheet_function_api
 arg1 = {
     "name": "arg1",
     "optional": False,
@@ -17,6 +17,6 @@ api = {
     "name": "excel",
     "type": "project",
     "modules": {
-        "worksheetfunction": worksheet_function.api
+        "worksheetfunction": worksheet_function_api
     }
 }
