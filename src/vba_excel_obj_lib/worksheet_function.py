@@ -5,29 +5,140 @@ from typing import Any
 
 class WorksheetFunction:
     @staticmethod
-    def average(*args: Any) -> vba_types.VBAInteger:
-        arr = np.array(args._data)
-        return arr.average()
+    def average(*args: Any) -> vba_types.VBADouble:
+        vals = []
+        for arg in args:
+            if isinstance(arg, vba_types.VBAArray):
+                vals.extend(arg)
+            else:
+                vals.append(arg.value)
+        arr = np.array(vals)
+        return np.average(arr)
 
     @staticmethod
-    def count(*args: Any) -> vba_types.VBAInteger:
+    def count(*args: Any) -> vba_types.VBADouble:
         return vba_types.VBAInteger(len(args))
 
     @staticmethod
-    def max(*args: Any) -> Any:
+    def max(*args: Any) -> vba_types.VBADouble:
         """
         Should be able to accept numbers and lists of numbers
         """
-        return max(*args)
+        vals = []
+        for arg in args:
+            if isinstance(arg, vba_types.VBAArray):
+                vals.extend(arg)
+            else:
+                vals.append(arg.value)
+        return max(vals)
 
     @staticmethod
-    def min(*args: Any) -> Any:
-        """
-        Should be able to accept numbers and lists of numbers
-        """
-        return min(*args)
+    def min(*args: Any) -> vba_types.VBADouble:
+        vals = []
+        for arg in args:
+            if isinstance(arg, vba_types.VBAArray):
+                vals.extend(arg)
+            else:
+                vals.append(arg.value)
+        return min(vals)
 
     @staticmethod
-    def small(values: vba_types.VBAArray, k: vba_types.VBAInteger) -> Any:
+    def small(values: vba_types.VBAArray,
+              k: vba_types.VBAInteger) -> vba_types.VBADouble:
         arr = np.array(values._data)
         return np.partition(arr, int(k) - 1)[int(k) - 1]
+
+    @staticmethod
+    def stdev(*args: Any) -> vba_types.VBADouble:
+        vals = []
+        for arg in args:
+            if isinstance(arg, vba_types.VBAArray):
+                vals.extend(arg)
+            else:
+                vals.append(arg.value)
+        arr = np.array(vals)
+        return np.std(arr)
+
+
+arg1 = {
+    "name": "arg1",
+    "optional": False,
+    "default": ""
+}
+
+
+args = [arg1]
+i = 2
+for n in range(29):
+    args.append({
+        "name": f"arg{i}",
+        "optional": True,
+        "default": ""
+    })
+
+
+api = {
+    "name": "worksheetfunction",
+    "type": "module",
+    "functions": {
+        "average": {
+            "name": "average",
+            "type": "function",
+            "project": "excel",
+            "module": "worksheetfunction",
+            "handle": getattr(WorksheetFunction, "average"),
+            "params": args
+        },
+        "count": {
+            "name": "count",
+            "type": "function",
+            "project": "excel",
+            "module": "worksheetfunction",
+            "handle": getattr(WorksheetFunction, "count"),
+            "params": args
+        },
+        "max": {
+            "name": "max",
+            "type": "function",
+            "project": "excel",
+            "module": "worksheetfunction",
+            "handle": getattr(WorksheetFunction, "max"),
+            "params": args
+        },
+        "min": {
+            "name": "min",
+            "type": "function",
+            "project": "excel",
+            "module": "worksheetfunction",
+            "handle": getattr(WorksheetFunction, "min"),
+            "params": args
+        },
+        "small": {
+            "name": "small",
+            "type": "function",
+            "project": "excel",
+            "module": "worksheetfunction",
+            "handle": getattr(WorksheetFunction, "small"),
+            "params": [
+                {
+                    "name": "arg1",
+                    "optional": False,
+                    "default": ""
+                },
+                {
+                    "name": "arg2",
+                    "optional": False,
+                    "default": ""
+                }
+            ]
+        },
+        "stdev": {
+            "name": "stdev",
+            "type": "function",
+            "project": "excel",
+            "module": "worksheetfunction",
+            "handle": getattr(WorksheetFunction, "stdev"),
+            "params": args
+        },
+    }
+}
