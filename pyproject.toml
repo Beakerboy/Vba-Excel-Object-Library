@@ -18,6 +18,7 @@ classifiers = [
 ]
 dependencies = [
   'numpy',
+  'vba_types @ git+https://github.com/Beakerboy/Vba-Types@dev',
 ]
 [project.optional-dependencies]
 tests = [
