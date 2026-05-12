@@ -66,7 +66,7 @@ api = {
             "module": "worksheetfunction",
             "handle": getattr(WorksheetFunction, "average"),
             "params": args
-        }
+        },
         "count": {
             "name": "count",
             "type": "function",
@@ -74,7 +74,7 @@ api = {
             "module": "worksheetfunction",
             "handle": getattr(WorksheetFunction, "count"),
             "params": args
-        }
+        },
         "max": {
             "name": "max",
             "type": "function",
@@ -82,7 +82,7 @@ api = {
             "module": "worksheetfunction",
             "handle": getattr(WorksheetFunction, "max"),
             "params": args
-        }
+        },
         "min": {
             "name": "min",
             "type": "function",
@@ -109,7 +109,7 @@ api = {
                     "default": ""
                 }
             ]
-        }
+        },
         "stdev": {
             "name": "stdev",
             "type": "function",
@@ -117,6 +117,6 @@ api = {
             "module": "worksheetfunction",
             "handle": getattr(WorksheetFunction, "stdev"),
             "params": args
-        }
+        },
     }
 }
