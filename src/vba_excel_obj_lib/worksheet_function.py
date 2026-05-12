@@ -13,7 +13,7 @@ class WorksheetFunction:
             else:
                 vals.append(arg.value)
         arr = np.array(vals)
-        return np.average(arr)
+        return vba_types.VBADouble(np.average(arr))
 
     @staticmethod
     def count(*args: Any) -> vba_types.VBADouble:
@@ -30,7 +30,7 @@ class WorksheetFunction:
                 vals.extend(arg)
             else:
                 vals.append(arg.value)
-        return max(vals)
+        return vba_types.VBADouble(max(vals))
 
     @staticmethod
     def min(*args: Any) -> vba_types.VBADouble:
@@ -40,7 +40,7 @@ class WorksheetFunction:
                 vals.extend(arg)
             else:
                 vals.append(arg.value)
-        return min(vals)
+        return vba_types.VBADouble(min(vals))
 
     @staticmethod
     def small(values: vba_types.VBAArray,
@@ -57,7 +57,7 @@ class WorksheetFunction:
             else:
                 vals.append(arg.value)
         arr = np.array(vals)
-        return np.std(arr)
+        return vba_types.VBADouble(np.std(arr))
 
 
 arg1 = {
