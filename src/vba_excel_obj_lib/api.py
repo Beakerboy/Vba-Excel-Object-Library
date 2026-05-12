@@ -27,7 +27,7 @@ api = {
                     "project": "excel",
                     "module": "worksheetfunction",
                     "handle": getattr(WorksheetFunction, "min"),
-                     "params": args
+                    "params": args
                 }
             }
         }
