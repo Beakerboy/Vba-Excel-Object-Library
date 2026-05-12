@@ -5,6 +5,15 @@ from typing import Any
 
 class WorksheetFunction:
     @staticmethod
+    def average(*args: Any) -> vba_types.VBAInteger:
+        arr = np.array(args._data)
+        return arr.average()
+
+    @staticmethod
+    def count(*args: Any) -> vba_types.VBAInteger:
+        return vba_types.VBAInteger(len(args))
+
+    @staticmethod
     def max(*args: Any) -> Any:
         """
         Should be able to accept numbers and lists of numbers
