@@ -36,3 +36,87 @@ class WorksheetFunction:
     def stdev(*args: Any) -> vba_types.VBADouble:
         arr = np.array(args._data)
         return arr.average()
+
+
+arg1 = {
+    "name": "arg1",
+    "optional": False,
+    "default": ""
+}
+
+
+args = [arg1]
+i = 2
+for n in range(29):
+    args.append({
+        "name": "arg" + i,
+        "optional": True,
+        "default": ""
+    })
+
+
+api = {
+    "name": "worksheetfunction",
+    "type": "module",
+    "functions": {
+        "average": {
+            "name": "average",
+            "type": "function",
+            "project": "excel",
+            "module": "worksheetfunction",
+            "handle": getattr(WorksheetFunction, "average"),
+            "params": args
+        }
+        "count": {
+            "name": "count",
+            "type": "function",
+            "project": "excel",
+            "module": "worksheetfunction",
+            "handle": getattr(WorksheetFunction, "count"),
+            "params": args
+        }
+        "max": {
+            "name": "max",
+            "type": "function",
+            "project": "excel",
+            "module": "worksheetfunction",
+            "handle": getattr(WorksheetFunction, "max"),
+            "params": args
+        }
+        "min": {
+            "name": "min",
+            "type": "function",
+            "project": "excel",
+            "module": "worksheetfunction",
+            "handle": getattr(WorksheetFunction, "min"),
+            "params": args
+        },
+        "small": {
+            "name": "small",
+            "type": "function",
+            "project": "excel",
+            "module": "worksheetfunction",
+            "handle": getattr(WorksheetFunction, "small"),
+            "params": [
+                {
+                    "name": "arg1",
+                    "optional": False,
+                    "default": ""
+                },
+                {
+                    "name": "arg2",
+                    "optional": False,
+                    "default": ""
+                }
+            ]
+        }
+        "stdev": {
+            "name": "stdev",
+            "type": "function",
+            "project": "excel",
+            "module": "worksheetfunction",
+            "handle": getattr(WorksheetFunction, "stdev"),
+            "params": args
+        }
+    }
+}
