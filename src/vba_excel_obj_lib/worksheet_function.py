@@ -49,7 +49,7 @@ args = [arg1]
 i = 2
 for n in range(29):
     args.append({
-        "name": "arg" + i,
+        "name": f"arg{i}",
         "optional": True,
         "default": ""
     })
