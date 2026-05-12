@@ -21,6 +21,14 @@ api = {
             "name": "worksheetfunction",
             "type": "module",
             "functions": {
+                "max": {
+                    "name": "max",
+                    "type": "function",
+                    "project": "excel",
+                    "module": "worksheetfunction",
+                    "handle": getattr(WorksheetFunction, "max"),
+                    "params": args
+                }
                 "min": {
                     "name": "min",
                     "type": "function",
@@ -28,6 +36,25 @@ api = {
                     "module": "worksheetfunction",
                     "handle": getattr(WorksheetFunction, "min"),
                     "params": args
+                },
+                "small": {
+                    "name": "small",
+                    "type": "function",
+                    "project": "excel",
+                    "module": "worksheetfunction",
+                    "handle": getattr(WorksheetFunction, "small"),
+                    "params": [
+                        {
+                            "name": "arg1",
+                            "optional": False,
+                            "default": ""
+                        },
+                        {
+                            "name": "arg2",
+                            "optional": False,
+                            "default": ""
+                        }
+                    ]
                 }
             }
         }
