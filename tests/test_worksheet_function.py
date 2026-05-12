@@ -18,3 +18,7 @@ def test_min() -> None:
 
 def test_average() -> None:
     assert WorksheetFunction.average(vba_types.VBAArray(1, 2, 3)) == vba_types.VBADouble(2.0)
+
+
+def stdev() -> None:
+    assert WorksheetFunction.stdev(vba_types.VBAArray(1, 2, 3)) == vba_types.VBADouble(1.0)
