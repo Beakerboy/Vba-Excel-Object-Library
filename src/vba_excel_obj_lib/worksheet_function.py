@@ -20,5 +20,5 @@ class WorksheetFunction:
 
     @staticmethod
     def small(values: vba_types.VBAArray, k: vba_types.VBAInteger) -> Any:
-        arr = np.array(values.[20, 10, 40, 30, 50, 5])
-       return np.partition(arr, int(k) - 1)[int(k) - 1]
+        arr = np.array(values._data)
+        return np.partition(arr, int(k) - 1)[int(k) - 1]
