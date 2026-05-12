@@ -24,14 +24,23 @@ class WorksheetFunction:
         """
         Should be able to accept numbers and lists of numbers
         """
-        return max(*args)
+        vals = []
+        for arg in args:
+            if isinstance(arg, vba_types.VBAArray):
+                vals.extend(arg)
+            else:
+                vals.append(arg.value)
+        return max(vals)
 
     @staticmethod
     def min(*args: Any) -> vba_types.VBADouble:
-        """
-        Should be able to accept numbers and lists of numbers
-        """
-        return min(*args)
+        vals = []
+        for arg in args:
+            if isinstance(arg, vba_types.VBAArray):
+                vals.extend(arg)
+            else:
+                vals.append(arg.value)
+        return min(vals)
 
     @staticmethod
     def small(values: vba_types.VBAArray,
@@ -41,7 +50,13 @@ class WorksheetFunction:
 
     @staticmethod
     def stdev(*args: Any) -> vba_types.VBADouble:
-        arr = np.array(args._data)
+        vals = []
+        for arg in args:
+            if isinstance(arg, vba_types.VBAArray):
+                vals.extend(arg)
+            else:
+                vals.append(arg.value)
+        arr = np.array(vals)
         return np.std(arr)
 
 
