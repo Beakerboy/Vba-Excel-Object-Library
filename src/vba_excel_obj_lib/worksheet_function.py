@@ -13,7 +13,7 @@ class WorksheetFunction:
             else:
                 vals.append(arg.value)
         arr = np.array(vals)
-        return arr.average()
+        return np.average(arr)
 
     @staticmethod
     def count(*args: Any) -> vba_types.VBADouble:
@@ -42,7 +42,7 @@ class WorksheetFunction:
     @staticmethod
     def stdev(*args: Any) -> vba_types.VBADouble:
         arr = np.array(args._data)
-        return arr.average()
+        return np.std(arr)
 
 
 arg1 = {
