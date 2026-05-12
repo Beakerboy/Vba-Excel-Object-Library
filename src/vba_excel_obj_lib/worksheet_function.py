@@ -28,7 +28,8 @@ class WorksheetFunction:
         return min(*args)
 
     @staticmethod
-    def small(values: vba_types.VBAArray, k: vba_types.VBAInteger) -> vba_types.VBADouble:
+    def small(values: vba_types.VBAArray,
+              k: vba_types.VBAInteger) -> vba_types.VBADouble:
         arr = np.array(values._data)
         return np.partition(arr, int(k) - 1)[int(k) - 1]
 
