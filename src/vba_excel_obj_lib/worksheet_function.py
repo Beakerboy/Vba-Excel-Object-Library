@@ -17,7 +17,7 @@ class WorksheetFunction:
 
     @staticmethod
     def count(*args: Any) -> vba_types.VBADouble:
-        return vba_types.VBAInteger(len(args))
+        return vba_types.VBADouble(len(args))
 
     @staticmethod
     def max(*args: Any) -> vba_types.VBADouble:
