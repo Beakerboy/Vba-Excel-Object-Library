@@ -47,7 +47,7 @@ class WorksheetFunction:
     def small(values: vba_types.VBAArray,
               k: vba_types.VBAInteger) -> vba_types.VBADouble:
         arr = np.array(values._data)
-        return np.partition(arr, int(k) - 1)[int(k) - 1]
+        return vba_types.VBADouble(np.partition(arr, int(k) - 1)[int(k) - 1])
 
     @staticmethod
     def stdev(*args: Any) -> vba_types.VBADouble:
