@@ -18,7 +18,14 @@ class WorksheetFunction:
 
     @staticmethod
     def count(*args: Any) -> vba_types.VBADouble:
-        return vba_types.VBADouble(len(args))
+        vals = []
+        for arg in args:
+            if isinstance(arg, vba_types.VBAArray):
+                new_list = list(map(lambda x: x.value, arg))
+                vals.extend(new_list)
+            else:
+                vals.append(arg.value)
+        return vba_types.VBADouble(len(vals))
 
     @staticmethod
     def max(*args: Any) -> vba_types.VBADouble:
