@@ -60,7 +60,7 @@ class WorksheetFunction:
             else:
                 vals.append(arg.value)
         arr = np.array(vals)
-        return vba_types.VBADouble(np.std(arr))
+        return vba_types.VBADouble(np.std(arr, ddof=1))
 
 
 arg1 = {
