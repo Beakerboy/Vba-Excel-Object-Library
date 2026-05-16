@@ -62,7 +62,7 @@ class WorksheetFunction:
         vals = []
         for arg in args:
             if isinstance(arg, vba_types.VBAArray):
-                new_list = list(map(lambda x: x.value, arg))
+                new_list = list(map(lambda x: x.value, arg.value))
                 vals.extend(new_list)
             else:
                 vals.append(arg.value)
