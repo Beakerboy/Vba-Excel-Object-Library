@@ -1,3 +1,4 @@
+from __future__ import annotations
 import numpy as np
 import vba_types
 from typing import Any
@@ -5,7 +6,7 @@ from typing import Any
 
 class WorksheetFunction:
     @staticmethod
-    def average(*args: Any) -> vba_types.VBADouble:
+    def average(*args: vba_types.VBATypeBase) -> vba_types.VBADouble:
         vals = []
         for arg in args:
             if isinstance(arg, vba_types.VBAArray):
@@ -17,7 +18,7 @@ class WorksheetFunction:
         return vba_types.VBADouble(np.average(arr))
 
     @staticmethod
-    def count(*args: Any) -> vba_types.VBADouble:
+    def count(*args: vba_types.VBATypeBase) -> vba_types.VBADouble:
         vals = []
         for arg in args:
             if isinstance(arg, vba_types.VBAArray):
@@ -28,7 +29,7 @@ class WorksheetFunction:
         return vba_types.VBADouble(len(vals))
 
     @staticmethod
-    def max(*args: Any) -> vba_types.VBADouble:
+    def max(*args: vba_types.VBATypeBase) -> vba_types.VBADouble:
         """
         Should be able to accept numbers and lists of numbers
         """
@@ -42,7 +43,7 @@ class WorksheetFunction:
         return vba_types.VBADouble(max(vals))
 
     @staticmethod
-    def min(*args: Any) -> vba_types.VBADouble:
+    def min(*args: vba_types.VBATypeBase) -> vba_types.VBADouble:
         vals = []
         for arg in args:
             if isinstance(arg, vba_types.VBAArray):
@@ -58,7 +59,7 @@ class WorksheetFunction:
         return vba_types.VBADouble(np.partition(arr, int(k) - 1)[int(k) - 1])
 
     @staticmethod
-    def stdev(*args: Any) -> vba_types.VBADouble:
+    def stdev(*args: vba_types.VBATypeBase) -> vba_types.VBADouble:
         vals = []
         for arg in args:
             if isinstance(arg, vba_types.VBAArray):
