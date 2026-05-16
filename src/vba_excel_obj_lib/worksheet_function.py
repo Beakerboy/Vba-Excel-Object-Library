@@ -9,7 +9,7 @@ class WorksheetFunction:
         vals = []
         for arg in args:
             if isinstance(arg, vba_types.VBAArray):
-                new_list = list(map(lambda x: x.value, arg._data))
+                new_list = list(map(lambda x: x.value, arg.))
                 vals.extend(new_list)
             else:
                 vals.append(arg.value)
@@ -21,7 +21,7 @@ class WorksheetFunction:
         vals = []
         for arg in args:
             if isinstance(arg, vba_types.VBAArray):
-                new_list = list(map(lambda x: x.value, arg._data))
+                new_list = list(map(lambda x: x.value, arg))
                 vals.extend(new_list)
             else:
                 vals.append(arg.value)
@@ -35,7 +35,7 @@ class WorksheetFunction:
         vals = []
         for arg in args:
             if isinstance(arg, vba_types.VBAArray):
-                new_list = list(map(lambda x: x.value, arg._data))
+                new_list = list(map(lambda x: x.value, arg))
                 vals.extend(new_list)
             else:
                 vals.append(arg.value)
@@ -46,7 +46,7 @@ class WorksheetFunction:
         vals = []
         for arg in args:
             if isinstance(arg, vba_types.VBAArray):
-                new_list = list(map(lambda x: x.value, arg._data))
+                new_list = list(map(lambda x: x.value, arg.))
                 vals.extend(new_list)
             else:
                 vals.append(arg.value)
@@ -63,7 +63,7 @@ class WorksheetFunction:
         vals = []
         for arg in args:
             if isinstance(arg, vba_types.VBAArray):
-                new_list = list(map(lambda x: x.value, arg._data))
+                new_list = list(map(lambda x: x.value, arg.))
                 vals.extend(new_list)
             else:
                 vals.append(arg.value)
