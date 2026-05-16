@@ -46,7 +46,8 @@ class WorksheetFunction:
         vals = []
         for arg in args:
             if isinstance(arg, vba_types.VBAArray):
-                vals.extend(arg)
+                new_list = list(map(lambda x: x.value, arg._data))
+                vals.extend(new_list)
             else:
                 vals.append(arg.value)
         return vba_types.VBADouble(min(vals))
