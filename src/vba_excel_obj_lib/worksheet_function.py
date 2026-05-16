@@ -1,7 +1,6 @@
 from __future__ import annotations
 import numpy as np
 import vba_types
-from typing import Any
 
 
 class WorksheetFunction:
