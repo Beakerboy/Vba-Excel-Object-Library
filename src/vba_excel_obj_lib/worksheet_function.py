@@ -71,7 +71,7 @@ class WorksheetFunction:
         arr = np.array(vals)
         return vba_types.VBADouble(np.std(arr, ddof=1))
 
-    @ataticmethod
+    @staticmethod
     def t_inv(p: VBADouble, df: VBADouble) -> VBADouble:
         result = scipy.special.stdtrit(df.value, p.value)
         return VBADouble(result)
