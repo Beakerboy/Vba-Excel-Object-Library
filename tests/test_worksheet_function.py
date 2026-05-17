@@ -49,6 +49,8 @@ def stdev() -> None:
 
 
 def test_tinv() -> None:
+    # Need to check what value Excel uses.
+    # Even SciPy changed algorithms recently.
     result = WorksheetFunction.t_inv(
         vba_types.VBADouble(.95),
         vba_types.VBADouble(10))
