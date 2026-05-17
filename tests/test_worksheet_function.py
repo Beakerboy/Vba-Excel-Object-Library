@@ -54,4 +54,5 @@ def test_tinv() -> None:
     result = WorksheetFunction.t_inv(
         vba_types.VBADouble(.95),
         vba_types.VBADouble(10))
-    assert result.value == 1.8124611228116756
+    expected = 1.8124611228116756
+    assert result.value == pytest.approx(expected)
