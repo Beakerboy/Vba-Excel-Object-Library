@@ -75,7 +75,7 @@ class WorksheetFunction:
     def t_inv(p: vba_types.VBADouble,
               df: vba_types.VBADouble) -> vba_types.VBADouble:
         result = scipy.special.stdtrit(df.value, p.value)
-        return vba_types.VBADouble(result)
+        return vba_types.VBADouble(float(result))
 
 
 arg1 = {
