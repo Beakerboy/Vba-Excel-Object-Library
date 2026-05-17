@@ -1,5 +1,6 @@
 from __future__ import annotations
 import numpy as np
+import scipy
 import vba_types
 
 
@@ -70,6 +71,10 @@ class WorksheetFunction:
         arr = np.array(vals)
         return vba_types.VBADouble(np.std(arr, ddof=1))
 
+    @ataticmethod
+    def t_inv(p, df) -> VBADouble:
+        result = scipy.special.stdtrit(df, p)
+        return VBADouble(result)
 
 arg1 = {
     "name": "arg1",
