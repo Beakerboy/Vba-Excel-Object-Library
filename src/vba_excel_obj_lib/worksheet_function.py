@@ -158,5 +158,24 @@ api = {
             "handle": getattr(WorksheetFunction, "stdev"),
             "params": args
         },
+        "t_inv": {
+            "name": "t_inv",
+            "type": "function",
+            "project": "excel",
+            "module": "worksheetfunction",
+            "handle": getattr(WorksheetFunction, "t_inv"),
+            "params": [
+                {
+                    "name": "arg1",
+                    "optional": False,
+                    "default": ""
+                },
+                {
+                    "name": "arg2",
+                    "optional": False,
+                    "default": ""
+                }
+            ]
+        },
     }
 }
