@@ -3,9 +3,11 @@ import vba_types
 from vba_excel_obj_lib.worksheet_function import WorksheetFunction
 
 
-array_of_ints = vba_types.VBAArray(vba_types.VBAInteger(1),
-                                   vba_types.VBAInteger(2),
-                                   vba_types.VBAInteger(3))
+array_of_ints = vba_types.VBAArray(
+    vba_types.VBAInteger(1),
+    vba_types.VBAInteger(2),
+    vba_types.VBAInteger(3)
+)
 
 
 @pytest.mark.parametrize(
@@ -47,5 +49,7 @@ def stdev() -> None:
 
 
 def test_tinv() -> None:
-  result = WorksheetFunction.t_inv(vba_types.VBADouble(.95), vba_types.VBADouble(10))
-  assert result.value == 1.8124611228107335
+    result = WorksheetFunction.t_inv(
+        vba_types.VBADouble(.95),
+        vba_types.VBADouble(10))
+    assert result.value == 1.8124611228107335
