@@ -47,5 +47,5 @@ def stdev() -> None:
 
 
 def test_tinv() -> None:
-  result = WorksheetFunction.t_inv(VBADouble(.95), VBADouble(10))
+  result = WorksheetFunction.t_inv(vba_types.VBADouble(.95), vba_types.VBADouble(10))
   assert result.value == 5.0
