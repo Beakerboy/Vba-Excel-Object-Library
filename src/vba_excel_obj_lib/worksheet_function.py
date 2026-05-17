@@ -72,9 +72,9 @@ class WorksheetFunction:
         return vba_types.VBADouble(np.std(arr, ddof=1))
 
     @staticmethod
-    def t_inv(p: VBADouble, df: VBADouble) -> VBADouble:
+    def t_inv(p: vba_types.VBADouble, df: vba_types.VBADouble) -> vba_types.VBADouble:
         result = scipy.special.stdtrit(df.value, p.value)
-        return VBADouble(result)
+        return vba_types.VBADouble(result)
 
 arg1 = {
     "name": "arg1",
