@@ -44,3 +44,8 @@ def test_average_mix() -> None:
 
 def stdev() -> None:
     assert WorksheetFunction.stdev(array_of_ints) == vba_types.VBADouble(1.0)
+
+
+def test_tinv() -> None:
+  result = WorksheetFunction.t_inv(VBADouble(.95), VBADouble(10))
+  assert result.value == 5.0
