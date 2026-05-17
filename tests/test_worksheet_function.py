@@ -3,9 +3,11 @@ import vba_types
 from vba_excel_obj_lib.worksheet_function import WorksheetFunction
 
 
-array_of_ints = vba_types.VBAArray(vba_types.VBAInteger(1),
-                                   vba_types.VBAInteger(2),
-                                   vba_types.VBAInteger(3))
+array_of_ints = vba_types.VBAArray(
+    vba_types.VBAInteger(1),
+    vba_types.VBAInteger(2),
+    vba_types.VBAInteger(3)
+)
 
 
 @pytest.mark.parametrize(
@@ -44,3 +46,13 @@ def test_average_mix() -> None:
 
 def stdev() -> None:
     assert WorksheetFunction.stdev(array_of_ints) == vba_types.VBADouble(1.0)
+
+
+def test_tinv() -> None:
+    # Need to check what value Excel uses.
+    # Even SciPy changed algorithms recently.
+    result = WorksheetFunction.t_inv(
+        vba_types.VBADouble(.95),
+        vba_types.VBADouble(10))
+    expected = 1.8124611228116756
+    assert result.value == pytest.approx(expected)
