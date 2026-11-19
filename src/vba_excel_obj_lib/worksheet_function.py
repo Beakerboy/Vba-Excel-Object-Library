@@ -1,4 +1,5 @@
 from __future__ import annotations
+import math
 import numpy as np
 import scipy
 import vba_types
@@ -16,6 +17,10 @@ class WorksheetFunction:
                 vals.append(arg.value)
         arr = np.array(vals)
         return vba_types.VBADouble(np.average(arr))
+
+    @staticmethod
+    def acos(arg1: vba_types.VBATypeBase) -> vba_types.VBADouble:
+        return vba_types.VBADouble(math.acos(arg1.value))
 
     @staticmethod
     def count(*args: vba_types.VBATypeBase) -> vba_types.VBADouble:
@@ -106,6 +111,14 @@ api = {
             "module": "worksheetfunction",
             "handle": getattr(WorksheetFunction, "average"),
             "params": args
+        },
+        "acos": {
+            "name": "acos",
+            "type": "function",
+            "project": "excel",
+            "module": "worksheetfunction",
+            "handle": getattr(WorksheetFunction, "acos"),
+            "params": arg1
         },
         "count": {
             "name": "count",
