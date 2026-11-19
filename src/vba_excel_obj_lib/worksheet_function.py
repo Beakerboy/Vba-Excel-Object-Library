@@ -58,7 +58,7 @@ class WorksheetFunction:
                 vals.append(arg.value)
         return vba_types.VBADouble(min(vals))
 
- @staticmethod
+    @staticmethod
     def pi() -> vba_types.VBADouble:
         return vba_types.VBADouble(math.pi)
 
