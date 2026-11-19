@@ -44,6 +44,11 @@ def test_average_mix() -> None:
     assert result == vba_types.VBADouble(2.0)
 
 
+def test_pi() -> None:
+    result = WorksheetFunction.pi()
+    assert result == vba_types.VBADouble(3.141592653589793)
+
+
 def stdev() -> None:
     assert WorksheetFunction.stdev(array_of_ints) == vba_types.VBADouble(1.0)
 

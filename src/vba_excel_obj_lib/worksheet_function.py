@@ -59,6 +59,10 @@ class WorksheetFunction:
         return vba_types.VBADouble(min(vals))
 
     @staticmethod
+    def pi() -> vba_types.VBADouble:
+        return vba_types.VBADouble(math.pi)
+
+    @staticmethod
     def small(values: vba_types.VBAArray,
               k: vba_types.VBAInteger) -> vba_types.VBADouble:
         arr = np.array(values._data)
@@ -143,6 +147,14 @@ api = {
             "module": "worksheetfunction",
             "handle": getattr(WorksheetFunction, "min"),
             "params": args
+        },
+        "pi": {
+            "name": "pi",
+            "type": "function",
+            "project": "excel",
+            "module": "worksheetfunction",
+            "handle": getattr(WorksheetFunction, "pi"),
+            "params": {}
         },
         "small": {
             "name": "small",
