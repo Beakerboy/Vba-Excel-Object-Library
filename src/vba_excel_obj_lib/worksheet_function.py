@@ -122,7 +122,7 @@ api = {
             "project": "excel",
             "module": "worksheetfunction",
             "handle": getattr(WorksheetFunction, "acos"),
-            "params": arg1
+            "params": [arg1]
         },
         "count": {
             "name": "count",
@@ -154,7 +154,7 @@ api = {
             "project": "excel",
             "module": "worksheetfunction",
             "handle": getattr(WorksheetFunction, "pi"),
-            "params": {}
+            "params": []
         },
         "small": {
             "name": "small",
