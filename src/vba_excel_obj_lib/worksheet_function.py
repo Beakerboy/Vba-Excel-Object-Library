@@ -20,7 +20,7 @@ class WorksheetFunction:
 
     @staticmethod
     def acos(arg1: vba_types.VBATypeBase) -> vba_types.VBADouble:
-        return vba_types.VBADouble(math.acos(arg1))
+        return vba_types.VBADouble(math.acos(arg1.value))
 
     @staticmethod
     def count(*args: vba_types.VBATypeBase) -> vba_types.VBADouble:
