@@ -86,6 +86,50 @@ class WorksheetFunction:
         result = scipy.special.stdtrit(df.value, p.value)
         return vba_types.VBADouble(float(result))
 
+    @staticmethod
+    def _to_numpy(arr: vba_types.VBAArray) -> np.ndarray:
+        """Helper to extract raw numeric values from a 1D or 2D VBAArray."""
+        if not isinstance(arr, vba_types.VBAArray):
+            return np.array([[float(arr.value)]], dtype=float)
+        raw = [[x.value for x in row] if isinstance(row, (list, tuple)) else row.value
+               for row in arr._data]
+        return np.array(raw, dtype=float)
+
+    @staticmethod
+    def _to_vba_array(np_arr: np.ndarray) -> vba_types.VBAArray:
+        """Helper to wrap a 1D or 2D NumPy array back into a 1-based VBAArray."""
+        if np_arr.ndim == 1:
+            data = [vba_types.VBADouble(float(v)) for v in np_arr]
+            bounds = [(1, len(data))]
+        else:
+            data = [[vba_types.VBADouble(float(v)) for v in row] for row in np_arr]
+            bounds = [(1, np_arr.shape[0]), (1, np_arr.shape[1])]
+        return vba_types.VBAArray(data=data, bounds=bounds)
+
+    @staticmethod
+    def mmult(array1: vba_types.VBAArray,
+              array2: vba_types.VBAArray) -> vba_types.VBAArray:
+        a1 = WorksheetFunction._to_numpy(array1)
+        a2 = WorksheetFunction._to_numpy(array2)
+        if a1.ndim == 1:
+            a1 = a1.reshape(1, -1)
+        if a2.ndim == 1:
+            a2 = a2.reshape(-1, 1)
+        result = a1 @ a2
+        return WorksheetFunction._to_vba_array(result)
+
+    @staticmethod
+    def transpose(arg1: vba_types.VBAArray) -> vba_types.VBAArray:
+        arr = WorksheetFunction._to_numpy(arg1)
+        if arr.ndim == 1:
+            # Excel turns a 1D horizontal array into a 2D (N x 1) vertical array
+            result = arr.reshape(-1, 1)
+        elif arr.ndim == 2 and arr.shape[1] == 1:
+            # Excel turns a 2D (N x 1) column array back into a 1D array
+            result = arr.reshape(-1)
+        else:
+            result = arr.T
+        return WorksheetFunction._to_vba_array(result)
 
 arg1 = {
     "name": "arg1",
@@ -148,6 +192,25 @@ api = {
             "handle": getattr(WorksheetFunction, "min"),
             "params": args
         },
+        "mmult": {
+            "name": "mmult",
+            "type": "function",
+            "project": "excel",
+            "module": "worksheetfunction",
+            "handle": getattr(WorksheetFunction, "mmult"),
+            "params": [
+                {
+                    "name": "arg1",
+                    "optional": False,
+                    "default": ""
+                },
+                {
+                    "name": "arg2",
+                    "optional": False,
+                    "default": ""
+                }
+            ]
+        },
         "pi": {
             "name": "pi",
             "type": "function",
@@ -201,6 +264,14 @@ api = {
                     "default": ""
                 }
             ]
+        },
+        "transpose": {
+            "name": "transpose",
+            "type": "function",
+            "project": "excel",
+            "module": "worksheetfunction",
+            "handle": getattr(WorksheetFunction, "transpose"),
+            "params": [arg1]
         },
     }
 }
