@@ -131,8 +131,9 @@ class WorksheetFunction:
             result = arr.T
         return WorksheetFunction._to_vba_array(result)
 
+
 api = (
-    LibraryBuilder("excel")
+    vba_types.LibraryBuilder("excel")
     .add_module("worksheetfunction", WorksheetFunction)
     .build()["modules"]["worksheetfunction"]
 )
