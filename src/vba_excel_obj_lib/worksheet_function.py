@@ -97,7 +97,9 @@ class WorksheetFunction:
 
     @staticmethod
     def _to_vba_array(np_arr: np.ndarray) -> vba_types.VBAArray:
-        """Helper to wrap a 1D or 2D NumPy array back into a 1-based VBAArray."""
+        """
+        Helper to wrap a 1D or 2D NumPy array back into a 1-based VBAArray.
+        """
         if np_arr.ndim == 1:
             data = [vba_types.VBADouble(float(v)) for v in np_arr]
             bounds = [(1, len(data))]
@@ -122,7 +124,8 @@ class WorksheetFunction:
     def transpose(arg1: vba_types.VBAArray) -> vba_types.VBAArray:
         arr = WorksheetFunction._to_numpy(arg1)
         if arr.ndim == 1:
-            # Excel turns a 1D horizontal array into a 2D (N x 1) vertical array
+            # Excel turns a 1D horizontal array into a 2D (N x 1)
+            # vertical array
             result = arr.reshape(-1, 1)
         elif arr.ndim == 2 and arr.shape[1] == 1:
             # Excel turns a 2D (N x 1) column array back into a 1D array
