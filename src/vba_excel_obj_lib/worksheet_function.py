@@ -91,8 +91,11 @@ class WorksheetFunction:
         """Helper to extract raw numeric values from a 1D or 2D VBAArray."""
         if not isinstance(arr, vba_types.VBAArray):
             return np.array([[float(arr.value)]], dtype=float)
-        raw = [[x.value for x in row] if isinstance(row, (list, tuple)) else row.value
-               for row in arr._data]
+        raw = [
+            [x.value for x in row] if isinstance(row, (list, tuple))
+            else row.value
+            for row in arr._data
+        ]
         return np.array(raw, dtype=float)
 
     @staticmethod
