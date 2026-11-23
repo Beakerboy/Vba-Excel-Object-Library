@@ -103,11 +103,8 @@ class WorksheetFunction:
     def transpose(arg1: vba_types.VBAArray) -> vba_types.VBAArray:
         arr = WorksheetFunction._to_numpy(arg1)
         if arr.ndim == 1:
-            # Excel turns a 1D horizontal array into a 2D (N x 1)
-            # vertical array
-            result = arr.reshape(-1, 1)
+            result: np.ndarray[Any, Any] = arr.reshape(-1, 1)
         elif arr.ndim == 2 and arr.shape[1] == 1:
-            # Excel turns a 2D (N x 1) column array back into a 1D array
             result = arr.reshape(-1)
         else:
             result = arr.T
