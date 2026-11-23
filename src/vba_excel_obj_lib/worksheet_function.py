@@ -1,8 +1,8 @@
-from __future__ import annotations
 import math
 import numpy as np
 import scipy
 import vba_types
+from typing import Any
 
 
 class WorksheetFunction:
@@ -59,6 +59,18 @@ class WorksheetFunction:
         return vba_types.VBADouble(min(vals))
 
     @staticmethod
+    def mmult(array1: vba_types.VBAArray,
+              array2: vba_types.VBAArray) -> vba_types.VBAArray:
+        a1 = WorksheetFunction._to_numpy(array1)
+        a2 = WorksheetFunction._to_numpy(array2)
+        if a1.ndim == 1:
+            a1 = a1.reshape(1, -1)
+        if a2.ndim == 1:
+            a2 = a2.reshape(-1, 1)
+        result = a1 @ a2
+        return WorksheetFunction._to_vba_array(result)
+
+    @staticmethod
     def pi() -> vba_types.VBADouble:
         return vba_types.VBADouble(math.pi)
 
@@ -86,121 +98,52 @@ class WorksheetFunction:
         result = scipy.special.stdtrit(df.value, p.value)
         return vba_types.VBADouble(float(result))
 
+    @staticmethod
+    def transpose(arg1: vba_types.VBAArray) -> vba_types.VBAArray:
+        arr = WorksheetFunction._to_numpy(arg1)
+        if arr.ndim == 1:
+            result: np.ndarray[Any, Any] = arr.reshape(-1, 1)
+        elif arr.ndim == 2 and arr.shape[1] == 1:
+            result = arr.reshape(-1)
+        else:
+            result = arr.T
+        return WorksheetFunction._to_vba_array(result)
 
-arg1 = {
-    "name": "arg1",
-    "optional": False,
-    "default": ""
-}
+    @staticmethod
+    def _extract_raw(item: object) -> Any:
+        if isinstance(item, (list, tuple)):
+            return [WorksheetFunction._extract_raw(x) for x in item]
+        if isinstance(item, vba_types.VBATypeBase):
+            return item.value
+        return item
+
+    @staticmethod
+    def _to_numpy(arr: vba_types.VBAArray) -> np.ndarray:
+        if not isinstance(arr, vba_types.VBAArray):
+            return np.array([[float(arr.value)]], dtype=float)
+        raw = WorksheetFunction._extract_raw(arr._data)
+        return np.array(raw, dtype=float)
+
+    @staticmethod
+    def _to_vba_array(np_arr: np.ndarray[Any, Any]) -> vba_types.VBAArray:
+        """
+        Helper to wrap a 1D or 2D NumPy array back into a 1-based VBAArray.
+        """
+        if np_arr.ndim == 1:
+            items = [vba_types.VBADouble(float(v)) for v in np_arr]
+            return vba_types.VBAArray(*items, base=1)
+
+        res = vba_types.VBAArray(base=1)
+        res._data = [
+            [vba_types.VBADouble(float(v)) for v in row]
+            for row in np_arr
+        ]
+        res._bounds = [(1, np_arr.shape[0]), (1, np_arr.shape[1])]
+        return res
 
 
-args = [arg1]
-i = 2
-for n in range(29):
-    args.append({
-        "name": f"arg{i}",
-        "optional": True,
-        "default": ""
-    })
-
-
-api = {
-    "name": "worksheetfunction",
-    "type": "module",
-    "functions": {
-        "average": {
-            "name": "average",
-            "type": "function",
-            "project": "excel",
-            "module": "worksheetfunction",
-            "handle": getattr(WorksheetFunction, "average"),
-            "params": args
-        },
-        "acos": {
-            "name": "acos",
-            "type": "function",
-            "project": "excel",
-            "module": "worksheetfunction",
-            "handle": getattr(WorksheetFunction, "acos"),
-            "params": [arg1]
-        },
-        "count": {
-            "name": "count",
-            "type": "function",
-            "project": "excel",
-            "module": "worksheetfunction",
-            "handle": getattr(WorksheetFunction, "count"),
-            "params": args
-        },
-        "max": {
-            "name": "max",
-            "type": "function",
-            "project": "excel",
-            "module": "worksheetfunction",
-            "handle": getattr(WorksheetFunction, "max"),
-            "params": args
-        },
-        "min": {
-            "name": "min",
-            "type": "function",
-            "project": "excel",
-            "module": "worksheetfunction",
-            "handle": getattr(WorksheetFunction, "min"),
-            "params": args
-        },
-        "pi": {
-            "name": "pi",
-            "type": "function",
-            "project": "excel",
-            "module": "worksheetfunction",
-            "handle": getattr(WorksheetFunction, "pi"),
-            "params": []
-        },
-        "small": {
-            "name": "small",
-            "type": "function",
-            "project": "excel",
-            "module": "worksheetfunction",
-            "handle": getattr(WorksheetFunction, "small"),
-            "params": [
-                {
-                    "name": "arg1",
-                    "optional": False,
-                    "default": ""
-                },
-                {
-                    "name": "arg2",
-                    "optional": False,
-                    "default": ""
-                }
-            ]
-        },
-        "stdev": {
-            "name": "stdev",
-            "type": "function",
-            "project": "excel",
-            "module": "worksheetfunction",
-            "handle": getattr(WorksheetFunction, "stdev"),
-            "params": args
-        },
-        "t_inv": {
-            "name": "t_inv",
-            "type": "function",
-            "project": "excel",
-            "module": "worksheetfunction",
-            "handle": getattr(WorksheetFunction, "t_inv"),
-            "params": [
-                {
-                    "name": "arg1",
-                    "optional": False,
-                    "default": ""
-                },
-                {
-                    "name": "arg2",
-                    "optional": False,
-                    "default": ""
-                }
-            ]
-        },
-    }
-}
+api = (
+    vba_types.LibraryBuilder("excel")
+    .add_module("worksheetfunction", WorksheetFunction)
+    .build()["modules"]["worksheetfunction"]
+)
