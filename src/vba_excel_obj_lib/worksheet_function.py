@@ -106,7 +106,7 @@ class WorksheetFunction:
             ]
             bounds = [(1, len(data))]
         else:
-            inner = [vba_types.VBADouble(float(v))] for v in row
+            inner = [vba_types.VBADouble(float(v)) for v in row]
             data = [inner for row in np_arr]
             bounds = [(1, np_arr.shape[0]), (1, np_arr.shape[1])]
         return vba_types.VBAArray(data=data, bounds=bounds)
