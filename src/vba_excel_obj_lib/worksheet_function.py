@@ -128,7 +128,6 @@ class WorksheetFunction:
         raw = WorksheetFunction._extract_raw(arr._data)
         return np.array(raw, dtype=float)
 
-
     @staticmethod
     def _to_vba_array(np_arr: np.ndarray[Any, Any]) -> vba_types.VBAArray:
         """
