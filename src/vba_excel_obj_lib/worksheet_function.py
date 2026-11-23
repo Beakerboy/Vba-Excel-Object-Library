@@ -112,7 +112,6 @@ class WorksheetFunction:
             result = arr.T
         return WorksheetFunction._to_vba_array(result)
 
-    
     @staticmethod
     def _to_numpy(arr: vba_types.VBAArray) -> np.ndarray:
         """Helper to extract raw numeric values from a 1D or 2D VBAArray."""
