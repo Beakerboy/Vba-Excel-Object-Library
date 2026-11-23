@@ -59,6 +59,18 @@ class WorksheetFunction:
         return vba_types.VBADouble(min(vals))
 
     @staticmethod
+    def mmult(array1: vba_types.VBAArray,
+              array2: vba_types.VBAArray) -> vba_types.VBAArray:
+        a1 = WorksheetFunction._to_numpy(array1)
+        a2 = WorksheetFunction._to_numpy(array2)
+        if a1.ndim == 1:
+            a1 = a1.reshape(1, -1)
+        if a2.ndim == 1:
+            a2 = a2.reshape(-1, 1)
+        result = a1 @ a2
+        return WorksheetFunction._to_vba_array(result)
+
+    @staticmethod
     def pi() -> vba_types.VBADouble:
         return vba_types.VBADouble(math.pi)
 
@@ -86,6 +98,21 @@ class WorksheetFunction:
         result = scipy.special.stdtrit(df.value, p.value)
         return vba_types.VBADouble(float(result))
 
+    @staticmethod
+    def transpose(arg1: vba_types.VBAArray) -> vba_types.VBAArray:
+        arr = WorksheetFunction._to_numpy(arg1)
+        if arr.ndim == 1:
+            # Excel turns a 1D horizontal array into a 2D (N x 1)
+            # vertical array
+            result = arr.reshape(-1, 1)
+        elif arr.ndim == 2 and arr.shape[1] == 1:
+            # Excel turns a 2D (N x 1) column array back into a 1D array
+            result = arr.reshape(-1)
+        else:
+            result = arr.T
+        return WorksheetFunction._to_vba_array(result)
+
+    
     @staticmethod
     def _to_numpy(arr: vba_types.VBAArray) -> np.ndarray:
         """Helper to extract raw numeric values from a 1D or 2D VBAArray."""
@@ -115,32 +142,6 @@ class WorksheetFunction:
             ]
             bounds = [(1, np_arr.shape[0]), (1, np_arr.shape[1])]
         return vba_types.VBAArray(data=data, bounds=bounds)
-
-    @staticmethod
-    def mmult(array1: vba_types.VBAArray,
-              array2: vba_types.VBAArray) -> vba_types.VBAArray:
-        a1 = WorksheetFunction._to_numpy(array1)
-        a2 = WorksheetFunction._to_numpy(array2)
-        if a1.ndim == 1:
-            a1 = a1.reshape(1, -1)
-        if a2.ndim == 1:
-            a2 = a2.reshape(-1, 1)
-        result = a1 @ a2
-        return WorksheetFunction._to_vba_array(result)
-
-    @staticmethod
-    def transpose(arg1: vba_types.VBAArray) -> vba_types.VBAArray:
-        arr = WorksheetFunction._to_numpy(arg1)
-        if arr.ndim == 1:
-            # Excel turns a 1D horizontal array into a 2D (N x 1)
-            # vertical array
-            result = arr.reshape(-1, 1)
-        elif arr.ndim == 2 and arr.shape[1] == 1:
-            # Excel turns a 2D (N x 1) column array back into a 1D array
-            result = arr.reshape(-1)
-        else:
-            result = arr.T
-        return WorksheetFunction._to_vba_array(result)
 
 
 api = (
