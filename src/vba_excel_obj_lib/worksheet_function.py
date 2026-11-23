@@ -3,6 +3,7 @@ import math
 import numpy as np
 import scipy
 import vba_types
+from typing import Any
 
 
 class WorksheetFunction:
