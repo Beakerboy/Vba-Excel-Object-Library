@@ -114,16 +114,20 @@ class WorksheetFunction:
         return WorksheetFunction._to_vba_array(result)
 
     @staticmethod
+    def _extract_raw(item: object) -> Any:
+        if isinstance(item, (list, tuple)):
+            return [WorksheetFunction._extract_raw(x) for x in item]
+        if isinstance(item, vba_types.VBATypeBase):
+            return item.value
+        return item
+
+    @staticmethod
     def _to_numpy(arr: vba_types.VBAArray) -> np.ndarray:
-        """Helper to extract raw numeric values from a 1D or 2D VBAArray."""
         if not isinstance(arr, vba_types.VBAArray):
             return np.array([[float(arr.value)]], dtype=float)
-        raw = [
-            [x.value for x in row] if isinstance(row, (list, tuple))
-            else row.value
-            for row in arr._data
-        ]
+        raw = WorksheetFunction._extract_raw(arr._data)
         return np.array(raw, dtype=float)
+
 
     @staticmethod
     def _to_vba_array(np_arr: np.ndarray[Any, Any]) -> vba_types.VBAArray:
