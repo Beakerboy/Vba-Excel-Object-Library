@@ -125,22 +125,21 @@ class WorksheetFunction:
         return np.array(raw, dtype=float)
 
     @staticmethod
-    def _to_vba_array(np_arr: np.ndarray) -> vba_types.VBAArray:
-        """
-        Helper to wrap a 1D or 2D NumPy array back into a 1-based VBAArray.
-        """
-        if np_arr.ndim == 1:
-            data = [
-                vba_types.VBADouble(float(v)) for v in np_arr
-            ]
-            bounds = [(1, len(data))]
-        else:
-            data = [
-                [vba_types.VBADouble(float(v)) for v in row]
-                for row in np_arr
-            ]
-            bounds = [(1, np_arr.shape[0]), (1, np_arr.shape[1])]
-        return vba_types.VBAArray(data=data, bounds=bounds)
+    def _to_vba_array(np_arr: np.ndarray[Any, Any]) -> vba_types.VBAArray:
+    """
+    Helper to wrap a 1D or 2D NumPy array back into a 1-based VBAArray.
+    """
+    if np_arr.ndim == 1:
+        items = [vba_types.VBADouble(float(v)) for v in np_arr]
+        return vba_types.VBAArray(*items, base=1)
+
+    res = vba_types.VBAArray(base=1)
+    res._data = [
+        [vba_types.VBADouble(float(v)) for v in row]
+        for row in np_arr
+    ]
+    res._bounds = [(1, np_arr.shape[0]), (1, np_arr.shape[1])]
+    return res
 
 
 api = (
