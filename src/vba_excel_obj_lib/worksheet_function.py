@@ -152,12 +152,12 @@ class WorksheetFunction:
                 _wrap_result(rect_grid[r][col_num - 1])
                 for r in range(num_rows)
             ]
-            return vba_types.VBAArray(col_slice)
+            return vba_types.VBAArray(*col_slice)
 
         # Full row when col_num == 0 and row_num > 0
         if col_num == 0 and row_num > 0:
             row_slice = [_wrap_result(val) for val in rect_grid[row_num - 1]]
-            return vba_types.VBAArray(row_slice)
+            return vba_types.VBAArray(*row_slice)
 
         # Default col_num to 1 when omitted and row_num > 0
         effective_col = col_num if col_num > 0 else 1
