@@ -41,18 +41,27 @@ class WorksheetFunction:
         arg4: Any = None,
     ) -> Any:
         """
-        Implements VBA's WorksheetFunction.Index(array_or_range, row_num, [col_num], [area_num]).
-        Uses 1-based indexing; passing 0 for row_num or col_num returns the full column or row.
+        Implements VBA's WorksheetFunction.Index(array_or_range, row_num,
+        [col_num], [area_num]). Uses 1-based indexing; passing 0 for row_num or
+        col_num returns the full column or row.
         """
         def _unwrap(val: Any) -> Any:
             return val.value if hasattr(val, "value") else val
 
         def _to_grid(container: Any) -> list[list[Any]]:
             # Handle multi-area containers if arg4 is provided
-            if isinstance(container, (list, tuple)) and container and isinstance(container[0], (list, tuple, vba_types.VBAArray)):
+            if (
+                isinstance(container, (list, tuple)) and
+                container and
+                isinstance(container[0], (list, tuple, vba_types.VBAArray))
+            ):
                 # Check if 2D (list of 1D rows) or 3D (list of 2D areas)
                 first_inner = _unwrap(container[0])
-                if isinstance(first_inner, (list, tuple)) and first_inner and isinstance(_unwrap(first_inner[0]), (list, tuple)):
+                if (
+                    isinstance(first_inner, (list, tuple)) and
+                    first_inner and
+                    isinstance(_unwrap(first_inner[0]), (list, tuple))
+                ):
                     area_idx = int(_unwrap(arg4)) - 1 if arg4 is not None else 0
                     if area_idx < 0 or area_idx >= len(container):
                         raise IndexError("area_num out of range")
@@ -75,23 +84,35 @@ class WorksheetFunction:
             if not items:
                 raise ValueError("Array cannot be empty")
 
-            # Determine whether elements are row containers (2D) or scalar VBATypeBase items (1D)
+            # Determine whether elements are row containers (2D) or scalar
+            # VBATypeBase items (1D)
             unwrapped_first = _unwrap(items[0])
-            if isinstance(items[0], vba_types.VBAArray) or isinstance(unwrapped_first, (list, tuple, np.ndarray)):
+            if (
+                isinstance(items[0], vba_types.VBAArray) or
+                isinstance(unwrapped_first, (list, tuple, np.ndarray))
+            ):
                 grid: list[list[Any]] = []
                 for row in items:
-                    row_items = list(row) if isinstance(row, (vba_types.VBAArray, list, tuple, np.ndarray)) else [row]
+                    is_instance = isinstance(
+                        row, 
+                        (vba_types.VBAArray, list, tuple, np.ndarray)
+                    )
+                    row_items = list(row) if is_instance else [row]
                     grid.append(row_items)
                 return grid
 
-            # 1D array treated as a single row (or column if accessed with row_num)
+            # 1D array treated as a single row (or column if accessed with
+            # row_num)
             return [items]
 
         def _wrap_result(val: Any) -> Any:
             if isinstance(val, vba_types.VBATypeBase):
                 return val
             unwrapped = _unwrap(val)
-            if isinstance(unwrapped, (int, np.integer)) and not isinstance(unwrapped, bool):
+            if (
+                isinstance(unwrapped, (int, np.integer)) and
+                not isinstance(unwrapped, bool)
+            ):
                 return vba_types.VBADouble(float(unwrapped))
             if isinstance(unwrapped, (float, np.floating)):
                 return vba_types.VBADouble(float(unwrapped))
@@ -110,8 +131,8 @@ class WorksheetFunction:
         row_num = int(_unwrap(arg2)) if arg2 is not None else 0
         col_num = int(_unwrap(arg3)) if arg3 is not None else 0
 
-        # If a 1D list was passed as a single row and row_num is used without col_num,
-        # treat row_num as the index along that 1D sequence.
+        # If a 1D list was passed as a single row and row_num is used without
+        # col_num, treat row_num as the index along that 1D sequence.
         if num_rows == 1 and arg3 is None and row_num > 0:
             if row_num > num_cols:
                 raise IndexError("row_num out of range")
@@ -124,7 +145,10 @@ class WorksheetFunction:
 
         # Full column when row_num == 0 and col_num > 0
         if row_num == 0 and col_num > 0:
-            col_slice = [_wrap_result(rect_grid[r][col_num - 1]) for r in range(num_rows)]
+            col_slice = [
+                _wrap_result(rect_grid[r][col_num - 1])
+                for r in range(num_rows)
+            ]
             return vba_types.VBAArray(col_slice)
 
         # Full row when col_num == 0 and row_num > 0
@@ -137,7 +161,6 @@ class WorksheetFunction:
         if row_num == 0:
             raise ValueError("row_num and col_num cannot both be 0")
         return _wrap_result(rect_grid[row_num - 1][effective_col - 1])
-
 
     @staticmethod
     def max(*args: vba_types.VBATypeBase) -> vba_types.VBADouble:
