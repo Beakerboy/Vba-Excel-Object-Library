@@ -1,13 +1,17 @@
-import sys
 import types
 import numpy as np
 import pytest
 import vba_types
 from vba_excel_obj_lib.worksheet_function import WorksheetFunction
 
+
 def test_1d_vba_array_lookup() -> None:
     arr = vba_types.VBAArray(
-        [vba_types.VBADouble(10), vba_types.VBADouble(20), vba_types.VBADouble(30)]
+        [
+            vba_types.VBADouble(10),
+            vba_types.VBADouble(20),
+            vba_types.VBADouble(30)
+        ]
     )
     result = WorksheetFunction.index(arr, vba_types.VBADouble(2))
     assert isinstance(result, vba_types.VBADouble)
@@ -17,8 +21,13 @@ def test_1d_vba_array_lookup() -> None:
 def test_2d_nested_vba_array_lookup() -> None:
     matrix = vba_types.VBAArray(
         [
-            vba_types.VBAArray([vba_types.VBADouble(1), vba_types.VBADouble(2)]),
-            vba_types.VBAArray([vba_types.VBADouble(3), vba_types.VBADouble(4)]),
+            vba_types.VBAArray([
+                vba_types.VBADouble(1),
+                vba_types.VBADouble(2)]),
+            vba_types.VBAArray([
+                vba_types.VBADouble(3),
+                vba_types.VBADouble(4)
+            ]),
         ]
     )
     result = WorksheetFunction.index(
@@ -31,8 +40,14 @@ def test_2d_nested_vba_array_lookup() -> None:
 def test_2d_default_column_is_one() -> None:
     matrix = vba_types.VBAArray(
         [
-            vba_types.VBAArray([vba_types.VBADouble(5), vba_types.VBADouble(6)]),
-            vba_types.VBAArray([vba_types.VBADouble(7), vba_types.VBADouble(8)]),
+            vba_types.VBAArray([
+                vba_types.VBADouble(5),
+                vba_types.VBADouble(6)
+            ]),
+            vba_types.VBAArray([
+                vba_types.VBADouble(7),
+                vba_types.VBADouble(8)
+            ]),
         ]
     )
     result = WorksheetFunction.index(matrix, vba_types.VBADouble(2))
@@ -43,8 +58,14 @@ def test_2d_default_column_is_one() -> None:
 def test_full_row_when_col_num_is_zero() -> None:
     matrix = vba_types.VBAArray(
         [
-            vba_types.VBAArray([vba_types.VBADouble(10), vba_types.VBADouble(20)]),
-            vba_types.VBAArray([vba_types.VBADouble(30), vba_types.VBADouble(40)]),
+            vba_types.VBAArray([
+                vba_types.VBADouble(10),
+                vba_types.VBADouble(20)
+            ]),
+            vba_types.VBAArray([
+                vba_types.VBADouble(30),
+                vba_types.VBADouble(40)
+            ]),
         ]
     )
     row_result = WorksheetFunction.index(
@@ -57,8 +78,14 @@ def test_full_row_when_col_num_is_zero() -> None:
 def test_full_column_when_row_num_is_zero() -> None:
     matrix = vba_types.VBAArray(
         [
-            vba_types.VBAArray([vba_types.VBADouble(10), vba_types.VBADouble(20)]),
-            vba_types.VBAArray([vba_types.VBADouble(30), vba_types.VBADouble(40)]),
+            vba_types.VBAArray([
+                vba_types.VBADouble(10),
+                vba_types.VBADouble(20)
+            ]),
+            vba_types.VBAArray([
+                vba_types.VBADouble(30),
+                vba_types.VBADouble(40)
+            ]),
         ]
     )
     col_result = WorksheetFunction.index(
@@ -91,7 +118,7 @@ def test_multi_area_selection() -> None:
         (-1, 1),  # negative row_num
     ],
 )
-def test_1d_list_invalid_indices_raise(row_num, col_num) -> None:
+def test_1d_list_invalid_indices_raise(row_num: int, col_num: int) -> None:
     arr = [10, 20, 30]
     with pytest.raises(IndexError):
         WorksheetFunction.index(arr, row_num)
@@ -109,6 +136,6 @@ def test_both_row_and_col_zero_raises_value_error() -> None:
         WorksheetFunction.index(matrix, 0, 0)
 
 
-def test_empty_array_raises_value_error():
+def test_empty_array_raises_value_error() -> None:
     with pytest.raises(ValueError):
         WorksheetFunction.index([], 1, 1)
