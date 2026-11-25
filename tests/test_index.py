@@ -3,6 +3,7 @@ import types
 import numpy as np
 import pytest
 import vba_types
+from vba_excel_obj_lib.worksheet_function import WorksheetFunction
 
 def test_1d_vba_array_lookup() -> None:
     arr = vba_types.VBAArray(
