@@ -62,7 +62,10 @@ class WorksheetFunction:
                     first_inner and
                     isinstance(_unwrap(first_inner[0]), (list, tuple))
                 ):
-                    area_idx = int(_unwrap(arg4)) - 1 if arg4 is not None else 0
+                    area_idx = (
+                        int(_unwrap(arg4)) - 1 
+                        if arg4 is not None else 0
+                    )
                     if area_idx < 0 or area_idx >= len(container):
                         raise IndexError("area_num out of range")
                     container = container[area_idx]
@@ -94,7 +97,7 @@ class WorksheetFunction:
                 grid: list[list[Any]] = []
                 for row in items:
                     is_instance = isinstance(
-                        row, 
+                        row,
                         (vba_types.VBAArray, list, tuple, np.ndarray)
                     )
                     row_items = list(row) if is_instance else [row]
