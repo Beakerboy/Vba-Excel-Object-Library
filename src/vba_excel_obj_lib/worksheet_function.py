@@ -63,7 +63,7 @@ class WorksheetFunction:
                     isinstance(_unwrap(first_inner[0]), (list, tuple))
                 ):
                     area_idx = (
-                        int(_unwrap(arg4)) - 1 
+                        int(_unwrap(arg4)) - 1
                         if arg4 is not None else 0
                     )
                     if area_idx < 0 or area_idx >= len(container):
