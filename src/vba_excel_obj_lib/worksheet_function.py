@@ -41,34 +41,31 @@ class WorksheetFunction:
         arg4: Any = None,
     ) -> Any:
         """
-        Implements VBA's WorksheetFunction.Index(array_or_range, row_num,
-        [col_num], [area_num]). Uses 1-based indexing; passing 0 for row_num or
-        col_num returns the full column or row.
+        Implements VBA's WorksheetFunction.Index(array_or_range, row_num, [col_num], [area_num]).
+        Uses 1-based indexing; passing 0 for row_num or col_num returns the full column or row.
         """
+        def _is_vba_array(val: Any) -> bool:
+            return isinstance(val, vba_types.VBAArray)
+
         def _unwrap(val: Any) -> Any:
+            if _is_vba_array(val):
+                return list(val)
             return val.value if hasattr(val, "value") else val
 
+        def _is_sequence_like(val: Any) -> bool:
+            return _is_vba_array(val) or isinstance(val, (list, tuple, np.ndarray))
+
         def _to_grid(container: Any) -> list[list[Any]]:
-            # Handle multi-area containers if arg4 is provided
-            if (
-                isinstance(container, (list, tuple)) and
-                container and
-                isinstance(container[0], (list, tuple, vba_types.VBAArray))
-            ):
-                # Check if 2D (list of 1D rows) or 3D (list of 2D areas)
-                first_inner = _unwrap(container[0])
-                if (
-                    isinstance(first_inner, (list, tuple)) and
-                    first_inner and
-                    isinstance(_unwrap(first_inner[0]), (list, tuple))
-                ):
-                    area_idx = (
-                        int(_unwrap(arg4)) - 1
-                        if arg4 is not None else 0
-                    )
-                    if area_idx < 0 or area_idx >= len(container):
-                        raise IndexError("area_num out of range")
-                    container = container[area_idx]
+            # Multi-area container: sequence of 2D grids when arg4 is supplied
+            if isinstance(container, (list, tuple)) and container:
+                first_area = container[0]
+                if _is_sequence_like(first_area):
+                    first_area_items = list(first_area)
+                    if first_area_items and _is_sequence_like(first_area_items[0]):
+                        area_idx = int(_unwrap(arg4)) - 1 if arg4 is not None else 0
+                        if area_idx < 0 or area_idx >= len(container):
+                            raise IndexError("area_num out of range")
+                        container = container[area_idx]
 
             if isinstance(container, np.ndarray):
                 if container.ndim == 1:
@@ -77,9 +74,7 @@ class WorksheetFunction:
                     return [list(row) for row in container]
                 raise ValueError("Only 1D and 2D arrays are supported")
 
-            if isinstance(container, vba_types.VBAArray):
-                items = list(container)
-            elif isinstance(container, (list, tuple)):
+            if _is_sequence_like(container):
                 items = list(container)
             else:
                 return [[container]]
@@ -87,35 +82,22 @@ class WorksheetFunction:
             if not items:
                 raise ValueError("Array cannot be empty")
 
-            # Determine whether elements are row containers (2D) or scalar
-            # VBATypeBase items (1D)
-            unwrapped_first = _unwrap(items[0])
-            if (
-                isinstance(items[0], vba_types.VBAArray) or
-                isinstance(unwrapped_first, (list, tuple, np.ndarray))
-            ):
+            # 2D if elements are row containers (VBAArray, list, tuple, ndarray)
+            if _is_sequence_like(items[0]):
                 grid: list[list[Any]] = []
                 for row in items:
-                    is_instance = isinstance(
-                        row,
-                        (vba_types.VBAArray, list, tuple, np.ndarray)
-                    )
-                    row_items = list(row) if is_instance else [row]
+                    row_items = list(row) if _is_sequence_like(row) else [row]
                     grid.append(row_items)
                 return grid
 
-            # 1D array treated as a single row (or column if accessed with
-            # row_num)
+            # 1D sequence
             return [items]
 
         def _wrap_result(val: Any) -> Any:
             if isinstance(val, vba_types.VBATypeBase):
                 return val
             unwrapped = _unwrap(val)
-            if (
-                isinstance(unwrapped, (int, np.integer)) and
-                not isinstance(unwrapped, bool)
-            ):
+            if isinstance(unwrapped, (int, np.integer)) and not isinstance(unwrapped, bool):
                 return vba_types.VBADouble(float(unwrapped))
             if isinstance(unwrapped, (float, np.floating)):
                 return vba_types.VBADouble(float(unwrapped))
@@ -125,19 +107,16 @@ class WorksheetFunction:
         num_rows = len(grid)
         num_cols = max(len(row) for row in grid)
 
-        # Normalize to rectangular grid
-        rect_grid = [
-            list(row) + [None] * (num_cols - len(row))
-            for row in grid
-        ]
+        rect_grid = [list(row) + [None] * (num_cols - len(row)) for row in grid]
 
         row_num = int(_unwrap(arg2)) if arg2 is not None else 0
         col_num = int(_unwrap(arg3)) if arg3 is not None else 0
 
-        # If a 1D list was passed as a single row and row_num is used without
-        # col_num, treat row_num as the index along that 1D sequence.
-        if num_rows == 1 and arg3 is None and row_num > 0:
-            if row_num > num_cols:
+        # 1D array behavior when col_num is omitted
+        if num_rows == 1 and arg3 is None:
+            if row_num == 0:
+                return vba_types.VBAArray(*[_wrap_result(x) for x in rect_grid[0]])
+            if row_num < 0 or row_num > num_cols:
                 raise IndexError("row_num out of range")
             return _wrap_result(rect_grid[0][row_num - 1])
 
@@ -149,8 +128,7 @@ class WorksheetFunction:
         # Full column when row_num == 0 and col_num > 0
         if row_num == 0 and col_num > 0:
             col_slice = [
-                _wrap_result(rect_grid[r][col_num - 1])
-                for r in range(num_rows)
+                _wrap_result(rect_grid[r][col_num - 1]) for r in range(num_rows)
             ]
             return vba_types.VBAArray(*col_slice)
 
@@ -159,10 +137,10 @@ class WorksheetFunction:
             row_slice = [_wrap_result(val) for val in rect_grid[row_num - 1]]
             return vba_types.VBAArray(*row_slice)
 
-        # Default col_num to 1 when omitted and row_num > 0
-        effective_col = col_num if col_num > 0 else 1
         if row_num == 0:
             raise ValueError("row_num and col_num cannot both be 0")
+
+        effective_col = col_num if col_num > 0 else 1
         return _wrap_result(rect_grid[row_num - 1][effective_col - 1])
 
     @staticmethod
