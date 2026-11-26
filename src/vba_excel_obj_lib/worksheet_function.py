@@ -205,7 +205,6 @@ class WorksheetFunction:
         effective_col = col_num if col_num > 0 else 1
         return _wrap_result(rect_grid[row_num - 1][effective_col - 1])
 
-
     @staticmethod
     def max(*args: vba_types.VBATypeBase) -> vba_types.VBADouble:
         """
