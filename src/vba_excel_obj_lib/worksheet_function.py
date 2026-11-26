@@ -40,32 +40,92 @@ class WorksheetFunction:
         arg3: Any = None,
         arg4: Any = None,
     ) -> Any:
-        """
-        Implements VBA's WorksheetFunction.Index(array_or_range, row_num, [col_num], [area_num]).
-        Uses 1-based indexing; passing 0 for row_num or col_num returns the full column or row.
-        """
+        """VBA WorksheetFunction.Index using array bounds."""
+
         def _is_vba_array(val: Any) -> bool:
             return isinstance(val, vba_types.VBAArray)
 
         def _unwrap(val: Any) -> Any:
             if _is_vba_array(val):
                 return list(val)
-            return val.value if hasattr(val, "value") else val
+            if hasattr(val, "value"):
+                return val.value
+            return val
 
-        def _is_sequence_like(val: Any) -> bool:
-            return _is_vba_array(val) or isinstance(val, (list, tuple, np.ndarray))
+        def _bounds(arr: Any, dim: int) -> tuple[int, int]:
+            dim_arg = vba_types.VBALong(dim)
+            low = int(_unwrap(arr.lbound(dim_arg)))
+            high = int(_unwrap(arr.ubound(dim_arg)))
+            return low, high
+
+        def _vba_array_to_grid(arr: Any) -> list[list[Any]]:
+            r_low, r_high = _bounds(arr, 1)
+            row_keys = list(range(r_low, r_high + 1))
+            if not row_keys:
+                raise ValueError("Array cannot be empty")
+
+            try:
+                c_low, c_high = _bounds(arr, 2)
+                col_keys = list(range(c_low, c_high + 1))
+                grid: list[list[Any]] = []
+                for r_key in row_keys:
+                    row_vals: list[Any] = []
+                    for c_key in col_keys:
+                        row_vals.append(_get_vba_item(arr, r_key, c_key))
+                    grid.append(row_vals)
+                return grid
+            except (IndexError, ValueError):
+                items = [_get_vba_item(arr, r_key) for r_key in row_keys]
+                if items and _is_vba_array(items[0]):
+                    return [list(row) for row in items]
+                return [items]
+
+        def _get_vba_item(
+            arr: Any, r_key: int, c_key: int | None = None
+        ) -> Any:
+            if c_key is None:
+                if hasattr(arr, "get"):
+                    return arr.get(r_key)
+                if hasattr(arr, "__getitem__"):
+                    try:
+                        return arr[r_key]
+                    except (KeyError, IndexError):
+                        return arr[r_key - _bounds(arr, 1)[0]]
+            else:
+                if hasattr(arr, "get"):
+                    try:
+                        return arr.get(r_key, c_key)
+                    except TypeError:
+                        return arr.get((r_key, c_key))
+                if hasattr(arr, "__getitem__"):
+                    try:
+                        return arr[r_key, c_key]
+                    except (KeyError, IndexError):
+                        r0, _ = _bounds(arr, 1)
+                        c0, _ = _bounds(arr, 2)
+                        return arr[r_key - r0][c_key - c0]
+            raise AttributeError("VBAArray does not support item lookup")
+
+        def _is_seq(val: Any) -> bool:
+            return _is_vba_array(val) or isinstance(
+                val, (list, tuple, np.ndarray)
+            )
 
         def _to_grid(container: Any) -> list[list[Any]]:
-            # Multi-area container: sequence of 2D grids when arg4 is supplied
             if isinstance(container, (list, tuple)) and container:
-                first_area = container[0]
-                if _is_sequence_like(first_area):
-                    first_area_items = list(first_area)
-                    if first_area_items and _is_sequence_like(first_area_items[0]):
-                        area_idx = int(_unwrap(arg4)) - 1 if arg4 is not None else 0
+                first = container[0]
+                if _is_seq(first):
+                    first_items = list(first)
+                    if first_items and _is_seq(first_items[0]):
+                        area_idx = (
+                            int(_unwrap(arg4)) - 1 if arg4 is not None else 0
+                        )
                         if area_idx < 0 or area_idx >= len(container):
                             raise IndexError("area_num out of range")
                         container = container[area_idx]
+
+            if _is_vba_array(container):
+                return _vba_array_to_grid(container)
 
             if isinstance(container, np.ndarray):
                 if container.ndim == 1:
@@ -74,7 +134,7 @@ class WorksheetFunction:
                     return [list(row) for row in container]
                 raise ValueError("Only 1D and 2D arrays are supported")
 
-            if _is_sequence_like(container):
+            if isinstance(container, (list, tuple)):
                 items = list(container)
             else:
                 return [[container]]
@@ -82,22 +142,20 @@ class WorksheetFunction:
             if not items:
                 raise ValueError("Array cannot be empty")
 
-            # 2D if elements are row containers (VBAArray, list, tuple, ndarray)
-            if _is_sequence_like(items[0]):
-                grid: list[list[Any]] = []
-                for row in items:
-                    row_items = list(row) if _is_sequence_like(row) else [row]
-                    grid.append(row_items)
-                return grid
+            if _is_seq(items[0]):
+                return [
+                    list(row) if _is_seq(row) else [row] for row in items
+                ]
 
-            # 1D sequence
             return [items]
 
         def _wrap_result(val: Any) -> Any:
             if isinstance(val, vba_types.VBATypeBase):
                 return val
             unwrapped = _unwrap(val)
-            if isinstance(unwrapped, (int, np.integer)) and not isinstance(unwrapped, bool):
+            if isinstance(unwrapped, (int, np.integer)) and not isinstance(
+                unwrapped, bool
+            ):
                 return vba_types.VBADouble(float(unwrapped))
             if isinstance(unwrapped, (float, np.floating)):
                 return vba_types.VBADouble(float(unwrapped))
@@ -107,15 +165,18 @@ class WorksheetFunction:
         num_rows = len(grid)
         num_cols = max(len(row) for row in grid)
 
-        rect_grid = [list(row) + [None] * (num_cols - len(row)) for row in grid]
+        rect_grid = [
+            list(row) + [None] * (num_cols - len(row)) for row in grid
+        ]
 
         row_num = int(_unwrap(arg2)) if arg2 is not None else 0
         col_num = int(_unwrap(arg3)) if arg3 is not None else 0
 
-        # 1D array behavior when col_num is omitted
         if num_rows == 1 and arg3 is None:
             if row_num == 0:
-                return vba_types.VBAArray(*[_wrap_result(x) for x in rect_grid[0]])
+                return vba_types.VBAArray(
+                    *[_wrap_result(x) for x in rect_grid[0]]
+                )
             if row_num < 0 or row_num > num_cols:
                 raise IndexError("row_num out of range")
             return _wrap_result(rect_grid[0][row_num - 1])
@@ -125,16 +186,17 @@ class WorksheetFunction:
         if col_num < 0 or col_num > num_cols:
             raise IndexError("col_num out of range")
 
-        # Full column when row_num == 0 and col_num > 0
         if row_num == 0 and col_num > 0:
             col_slice = [
-                _wrap_result(rect_grid[r][col_num - 1]) for r in range(num_rows)
+                _wrap_result(rect_grid[r][col_num - 1])
+                for r in range(num_rows)
             ]
             return vba_types.VBAArray(*col_slice)
 
-        # Full row when col_num == 0 and row_num > 0
         if col_num == 0 and row_num > 0:
-            row_slice = [_wrap_result(val) for val in rect_grid[row_num - 1]]
+            row_slice = [
+                _wrap_result(val) for val in rect_grid[row_num - 1]
+            ]
             return vba_types.VBAArray(*row_slice)
 
         if row_num == 0:
@@ -142,6 +204,7 @@ class WorksheetFunction:
 
         effective_col = col_num if col_num > 0 else 1
         return _wrap_result(rect_grid[row_num - 1][effective_col - 1])
+
 
     @staticmethod
     def max(*args: vba_types.VBATypeBase) -> vba_types.VBADouble:
