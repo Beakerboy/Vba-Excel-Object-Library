@@ -3,6 +3,7 @@ import numpy as np
 import scipy
 import vba_types
 from typing import Any
+from vba_types.exceptions import SubscriptOutOfRangeError, TypeMismatchError
 
 
 class WorksheetFunction:
@@ -40,13 +41,7 @@ class WorksheetFunction:
         arg3: Any = None,
         arg4: Any = None,
     ) -> Any:
-        """VBA WorksheetFunction.Index using array bounds."""
-        subscript_err = getattr(
-            getattr(vba_types, "exceptions", object),
-            "SubscriptOutOfRangeError",
-            IndexError,
-        )
-        lookup_errors = (KeyError, IndexError, subscript_err)
+        """VBA WorksheetFunction.Index using VBAArray bounds."""
 
         def _is_vba_array(val: Any) -> bool:
             return isinstance(val, vba_types.VBAArray)
@@ -58,60 +53,67 @@ class WorksheetFunction:
                 return val.value
             return val
 
-        def _bounds(arr: Any, dim: int) -> tuple[int, int]:
+        def _to_index_int(val: Any, default: int = 0) -> int:
+            if val is None:
+                return default
+            raw = _unwrap(val)
+            if isinstance(raw, bool):
+                raise TypeMismatchError()
+            if isinstance(raw, (int, np.integer)):
+                return int(raw)
+            if isinstance(raw, (float, np.floating)):
+                if not np.isfinite(raw):
+                    raise TypeMismatchError()
+                if float(raw).is_integer():
+                    return int(raw)
+                return int(round(float(raw)))
+            if isinstance(raw, str):
+                try:
+                    return int(float(raw.strip()))
+                except ValueError as exc:
+                    raise TypeMismatchError() from exc
+            raise TypeMismatchError()
+
+        def _ndim(arr: vba_types.VBAArray) -> int:
+            return len(arr._bounds)
+
+        def _bounds(
+            arr: vba_types.VBAArray, dim: int
+        ) -> tuple[int, int]:
+            if dim < 1 or dim > _ndim(arr):
+                raise SubscriptOutOfRangeError()
             dim_arg = vba_types.VBALong(dim)
-            low = int(_unwrap(arr.lbound(dim_arg)))
-            high = int(_unwrap(arr.ubound(dim_arg)))
+            low = _to_index_int(arr.lbound(dim_arg))
+            high = _to_index_int(arr.ubound(dim_arg))
             return low, high
 
-        def _vba_array_to_grid(arr: Any) -> list[list[Any]]:
+        def _vba_array_to_grid(
+            arr: vba_types.VBAArray,
+        ) -> list[list[Any]]:
+            ndim = _ndim(arr)
+            if ndim == 0:
+                raise SubscriptOutOfRangeError()
+
             r_low, r_high = _bounds(arr, 1)
             row_keys = list(range(r_low, r_high + 1))
             if not row_keys:
-                raise ValueError("Array cannot be empty")
+                raise SubscriptOutOfRangeError()
 
-            try:
-                c_low, c_high = _bounds(arr, 2)
-                col_keys = list(range(c_low, c_high + 1))
-                grid: list[list[Any]] = []
-                for r_key in row_keys:
-                    row_vals: list[Any] = []
-                    for c_key in col_keys:
-                        row_vals.append(_get_vba_item(arr, r_key, c_key))
-                    grid.append(row_vals)
-                return grid
-            except (*lookup_errors, ValueError):
-                items = [_get_vba_item(arr, r_key) for r_key in row_keys]
-                if items and _is_vba_array(items[0]):
-                    return [list(row) for row in items]
+            if ndim == 1:
+                items = [arr[r_key] for r_key in row_keys]
                 return [items]
 
-        def _get_vba_item(
-            arr: Any, r_key: int, c_key: int | None = None
-        ) -> Any:
-            if c_key is None:
-                if hasattr(arr, "get"):
-                    return arr.get(r_key)
-                if hasattr(arr, "__getitem__"):
-                    try:
-                        return arr[r_key]
-                    except lookup_errors:
-                        r0, _ = _bounds(arr, 1)
-                        return arr[r_key - r0]
-            else:
-                if hasattr(arr, "get"):
-                    try:
-                        return arr.get(r_key, c_key)
-                    except TypeError:
-                        return arr.get((r_key, c_key))
-                if hasattr(arr, "__getitem__"):
-                    try:
-                        return arr[r_key, c_key]
-                    except lookup_errors:
-                        r0, _ = _bounds(arr, 1)
-                        c0, _ = _bounds(arr, 2)
-                        return arr[r_key - r0][c_key - c0]
-            raise AttributeError("VBAArray does not support item lookup")
+            if ndim == 2:
+                c_low, c_high = _bounds(arr, 2)
+                col_keys = list(range(c_low, c_high + 1))
+                if not col_keys:
+                    raise SubscriptOutOfRangeError()
+                return [
+                    [arr[r_key, c_key] for c_key in col_keys]
+                    for r_key in row_keys
+                ]
+
+            raise SubscriptOutOfRangeError()
 
         def _is_seq(val: Any) -> bool:
             return _is_vba_array(val) or isinstance(
@@ -125,10 +127,12 @@ class WorksheetFunction:
                     first_items = list(first)
                     if first_items and _is_seq(first_items[0]):
                         area_idx = (
-                            int(_unwrap(arg4)) - 1 if arg4 is not None else 0
+                            _to_index_int(arg4) - 1
+                            if arg4 is not None
+                            else 0
                         )
                         if area_idx < 0 or area_idx >= len(container):
-                            raise IndexError("area_num out of range")
+                            raise SubscriptOutOfRangeError()
                         container = container[area_idx]
 
             if _is_vba_array(container):
@@ -139,7 +143,7 @@ class WorksheetFunction:
                     return [list(container)]
                 if container.ndim == 2:
                     return [list(row) for row in container]
-                raise ValueError("Only 1D and 2D arrays are supported")
+                raise SubscriptOutOfRangeError()
 
             if isinstance(container, (list, tuple)):
                 items = list(container)
@@ -147,11 +151,12 @@ class WorksheetFunction:
                 return [[container]]
 
             if not items:
-                raise ValueError("Array cannot be empty")
+                raise SubscriptOutOfRangeError()
 
             if _is_seq(items[0]):
                 return [
-                    list(row) if _is_seq(row) else [row] for row in items
+                    list(row) if _is_seq(row) else [row]
+                    for row in items
                 ]
 
             return [items]
@@ -160,9 +165,9 @@ class WorksheetFunction:
             if isinstance(val, vba_types.VBATypeBase):
                 return val
             unwrapped = _unwrap(val)
-            if isinstance(unwrapped, (int, np.integer)) and not isinstance(
-                unwrapped, bool
-            ):
+            if isinstance(
+                unwrapped, (int, np.integer)
+            ) and not isinstance(unwrapped, bool):
                 return vba_types.VBADouble(float(unwrapped))
             if isinstance(unwrapped, (float, np.floating)):
                 return vba_types.VBADouble(float(unwrapped))
@@ -176,8 +181,8 @@ class WorksheetFunction:
             list(row) + [None] * (num_cols - len(row)) for row in grid
         ]
 
-        row_num = int(_unwrap(arg2)) if arg2 is not None else 0
-        col_num = int(_unwrap(arg3)) if arg3 is not None else 0
+        row_num = _to_index_int(arg2, default=0)
+        col_num = _to_index_int(arg3, default=0)
 
         if num_rows == 1 and arg3 is None:
             if row_num == 0:
@@ -185,13 +190,13 @@ class WorksheetFunction:
                     *[_wrap_result(x) for x in rect_grid[0]]
                 )
             if row_num < 0 or row_num > num_cols:
-                raise IndexError("row_num out of range")
+                raise SubscriptOutOfRangeError()
             return _wrap_result(rect_grid[0][row_num - 1])
 
         if row_num < 0 or row_num > num_rows:
-            raise IndexError("row_num out of range")
+            raise SubscriptOutOfRangeError()
         if col_num < 0 or col_num > num_cols:
-            raise IndexError("col_num out of range")
+            raise SubscriptOutOfRangeError()
 
         if row_num == 0 and col_num > 0:
             col_slice = [
@@ -207,11 +212,10 @@ class WorksheetFunction:
             return vba_types.VBAArray(*row_slice)
 
         if row_num == 0:
-            raise ValueError("row_num and col_num cannot both be 0")
+            raise SubscriptOutOfRangeError()
 
         effective_col = col_num if col_num > 0 else 1
         return _wrap_result(rect_grid[row_num - 1][effective_col - 1])
-
 
     @staticmethod
     def max(*args: vba_types.VBATypeBase) -> vba_types.VBADouble:
