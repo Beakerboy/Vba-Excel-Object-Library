@@ -3,6 +3,7 @@ import numpy as np
 import scipy
 import vba_types
 from typing import Any
+from vba_types.exceptions import SubscriptOutOfRangeError, TypeMismatchError
 
 
 class WorksheetFunction:
@@ -32,6 +33,192 @@ class WorksheetFunction:
             else:
                 vals.append(arg.value)
         return vba_types.VBADouble(len(vals))
+
+    @staticmethod
+    def index(
+        arg1: Any,
+        arg2: Any,
+        arg3: Any = None,
+        arg4: Any = None,
+    ) -> Any:
+        """VBA WorksheetFunction.Index using VBAArray bounds."""
+
+        def _is_vba_array(val: Any) -> bool:
+            return isinstance(val, vba_types.VBAArray)
+
+        def _unwrap(val: Any) -> Any:
+            if _is_vba_array(val):
+                return list(val)
+            if hasattr(val, "value"):
+                return val.value
+            return val
+
+        def _to_index_int(val: Any, default: int = 0) -> int:
+            if val is None:
+                return default
+            raw = _unwrap(val)
+            if isinstance(raw, bool):
+                raise TypeMismatchError()
+            if isinstance(raw, (int, np.integer)):
+                return int(raw)
+            if isinstance(raw, (float, np.floating)):
+                if not np.isfinite(raw):
+                    raise TypeMismatchError()
+                if float(raw).is_integer():
+                    return int(raw)
+                return int(round(float(raw)))
+            if isinstance(raw, str):
+                try:
+                    return int(float(raw.strip()))
+                except ValueError as exc:
+                    raise TypeMismatchError() from exc
+            raise TypeMismatchError()
+
+        def _ndim(arr: vba_types.VBAArray) -> int:
+            return len(arr._bounds)
+
+        def _bounds(
+            arr: vba_types.VBAArray, dim: int
+        ) -> tuple[int, int]:
+            if dim < 1 or dim > _ndim(arr):
+                raise SubscriptOutOfRangeError()
+            dim_arg = vba_types.VBALong(dim)
+            low = _to_index_int(arr.lbound(dim_arg))
+            high = _to_index_int(arr.ubound(dim_arg))
+            return low, high
+
+        def _vba_array_to_grid(
+            arr: vba_types.VBAArray,
+        ) -> list[list[Any]]:
+            ndim = _ndim(arr)
+            if ndim == 0:
+                raise SubscriptOutOfRangeError()
+
+            r_low, r_high = _bounds(arr, 1)
+            row_keys = list(range(r_low, r_high + 1))
+            if not row_keys:
+                raise SubscriptOutOfRangeError()
+
+            if ndim == 1:
+                items = [arr[r_key] for r_key in row_keys]
+                return [items]
+
+            if ndim == 2:
+                c_low, c_high = _bounds(arr, 2)
+                col_keys = list(range(c_low, c_high + 1))
+                if not col_keys:
+                    raise SubscriptOutOfRangeError()
+                return [
+                    [arr[r_key, c_key] for c_key in col_keys]
+                    for r_key in row_keys
+                ]
+
+            raise SubscriptOutOfRangeError()
+
+        def _is_seq(val: Any) -> bool:
+            return _is_vba_array(val) or isinstance(
+                val, (list, tuple, np.ndarray)
+            )
+
+        def _to_grid(container: Any) -> list[list[Any]]:
+            if isinstance(container, (list, tuple)) and container:
+                first = container[0]
+                if _is_seq(first):
+                    first_items = list(first)
+                    if first_items and _is_seq(first_items[0]):
+                        area_idx = (
+                            _to_index_int(arg4) - 1
+                            if arg4 is not None
+                            else 0
+                        )
+                        if area_idx < 0 or area_idx >= len(container):
+                            raise SubscriptOutOfRangeError()
+                        container = container[area_idx]
+
+            if _is_vba_array(container):
+                return _vba_array_to_grid(container)
+
+            if isinstance(container, np.ndarray):
+                if container.ndim == 1:
+                    return [list(container)]
+                if container.ndim == 2:
+                    return [list(row) for row in container]
+                raise SubscriptOutOfRangeError()
+
+            if isinstance(container, (list, tuple)):
+                items = list(container)
+            else:
+                return [[container]]
+
+            if not items:
+                raise SubscriptOutOfRangeError()
+
+            if _is_seq(items[0]):
+                return [
+                    list(row) if _is_seq(row) else [row]
+                    for row in items
+                ]
+
+            return [items]
+
+        def _wrap_result(val: Any) -> Any:
+            if isinstance(val, vba_types.VBATypeBase):
+                return val
+            unwrapped = _unwrap(val)
+            if isinstance(
+                unwrapped, (int, np.integer)
+            ) and not isinstance(unwrapped, bool):
+                return vba_types.VBADouble(float(unwrapped))
+            if isinstance(unwrapped, (float, np.floating)):
+                return vba_types.VBADouble(float(unwrapped))
+            return val
+
+        grid = _to_grid(arg1)
+        num_rows = len(grid)
+        num_cols = max(len(row) for row in grid)
+
+        rect_grid = [
+            list(row) + [None] * (num_cols - len(row)) for row in grid
+        ]
+
+        row_num = _to_index_int(arg2, default=0)
+        if arg3 is None and row_num > 0 and num_rows > 1:
+            col_num = 1
+        else:
+            col_num = _to_index_int(arg3, default=0)
+
+        if num_rows == 1 and arg3 is None:
+            if row_num == 0:
+                return vba_types.VBAArray(
+                    *[_wrap_result(x) for x in rect_grid[0]]
+                )
+            if row_num < 0 or row_num > num_cols:
+                raise SubscriptOutOfRangeError()
+            return _wrap_result(rect_grid[0][row_num - 1])
+
+        if row_num < 0 or row_num > num_rows:
+            raise SubscriptOutOfRangeError()
+        if col_num < 0 or col_num > num_cols:
+            raise SubscriptOutOfRangeError()
+
+        if row_num == 0 and col_num > 0:
+            col_slice = [
+                _wrap_result(rect_grid[r][col_num - 1])
+                for r in range(num_rows)
+            ]
+            return vba_types.VBAArray(*col_slice)
+
+        if col_num == 0 and row_num > 0:
+            row_slice = [
+                _wrap_result(val) for val in rect_grid[row_num - 1]
+            ]
+            return vba_types.VBAArray(*row_slice)
+
+        if row_num == 0:
+            raise SubscriptOutOfRangeError()
+
+        effective_col = col_num if col_num > 0 else 1
+        return _wrap_result(rect_grid[row_num - 1][effective_col - 1])
 
     @staticmethod
     def max(*args: vba_types.VBATypeBase) -> vba_types.VBADouble:
