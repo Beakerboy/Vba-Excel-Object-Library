@@ -41,6 +41,12 @@ class WorksheetFunction:
         arg4: Any = None,
     ) -> Any:
         """VBA WorksheetFunction.Index using array bounds."""
+        subscript_err = getattr(
+            getattr(vba_types, "exceptions", object),
+            "SubscriptOutOfRangeError",
+            IndexError,
+        )
+        lookup_errors = (KeyError, IndexError, subscript_err)
 
         def _is_vba_array(val: Any) -> bool:
             return isinstance(val, vba_types.VBAArray)
@@ -74,7 +80,7 @@ class WorksheetFunction:
                         row_vals.append(_get_vba_item(arr, r_key, c_key))
                     grid.append(row_vals)
                 return grid
-            except (IndexError, ValueError):
+            except (*lookup_errors, ValueError):
                 items = [_get_vba_item(arr, r_key) for r_key in row_keys]
                 if items and _is_vba_array(items[0]):
                     return [list(row) for row in items]
@@ -89,8 +95,9 @@ class WorksheetFunction:
                 if hasattr(arr, "__getitem__"):
                     try:
                         return arr[r_key]
-                    except (KeyError, IndexError):
-                        return arr[r_key - _bounds(arr, 1)[0]]
+                    except lookup_errors:
+                        r0, _ = _bounds(arr, 1)
+                        return arr[r_key - r0]
             else:
                 if hasattr(arr, "get"):
                     try:
@@ -100,7 +107,7 @@ class WorksheetFunction:
                 if hasattr(arr, "__getitem__"):
                     try:
                         return arr[r_key, c_key]
-                    except (KeyError, IndexError):
+                    except lookup_errors:
                         r0, _ = _bounds(arr, 1)
                         c0, _ = _bounds(arr, 2)
                         return arr[r_key - r0][c_key - c0]
@@ -204,6 +211,7 @@ class WorksheetFunction:
 
         effective_col = col_num if col_num > 0 else 1
         return _wrap_result(rect_grid[row_num - 1][effective_col - 1])
+
 
     @staticmethod
     def max(*args: vba_types.VBATypeBase) -> vba_types.VBADouble:
