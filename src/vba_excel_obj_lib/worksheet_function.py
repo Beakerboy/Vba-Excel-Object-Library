@@ -182,7 +182,10 @@ class WorksheetFunction:
         ]
 
         row_num = _to_index_int(arg2, default=0)
-        col_num = _to_index_int(arg3, default=0)
+        if arg3 is None and row_num > 0 and num_rows > 1:
+            col_num = 1
+        else:
+            col_num = _to_index_int(arg3, default=0)
 
         if num_rows == 1 and arg3 is None:
             if row_num == 0:
