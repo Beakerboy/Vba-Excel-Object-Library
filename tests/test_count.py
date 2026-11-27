@@ -1,7 +1,5 @@
-import pytest
 import vba_types
 from vba_excel_obj_lib.worksheet_function import WorksheetFunction
-from vba_types.exceptions import TypeMismatchError
 
 
 def test_count_mixed_scalars_and_array() -> None:
