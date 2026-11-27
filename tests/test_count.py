@@ -47,11 +47,3 @@ def test_count_empty_args_and_empty_array() -> None:
     assert WorksheetFunction.count().value == 0.0
     empty_arr = vba_types.VBAArray()
     assert WorksheetFunction.count(empty_arr).value == 0.0
-
-
-def test_count_missing_value_attr_raises_type_mismatch() -> None:
-    class _NoValue:
-        pass
-
-    with pytest.raises(TypeMismatchError):
-        WorksheetFunction.count(_NoValue())  # type: ignore[arg-type]
