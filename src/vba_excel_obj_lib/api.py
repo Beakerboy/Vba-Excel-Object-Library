@@ -1,0 +1,11 @@
+from .worksheet_function import api as worksheet_function_api
+
+
+api = {
+    "name": "excel",
+    "type": "project",
+    "modules": {},
+    "classes": {
+        "worksheetfunction": worksheet_function_api
+    }
+}
