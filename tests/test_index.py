@@ -1,7 +1,7 @@
 import pytest
 import vba_types
 from vba_excel_obj_lib.worksheet_function import WorksheetFunction
-from vba_types.exceptions import SubscriptOutOfRangeError, TypeMismatchError
+from vba_types.exceptions import SubscriptOutOfRangeError
 
 
 def _make_2d_vba_array(
