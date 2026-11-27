@@ -64,18 +64,15 @@ class WorksheetFunction:
     ) -> vba_types.VBADouble:
         """VBA WorksheetFunction.Count over numeric values."""
 
-        def _collect(item: vba_types.VBATypeBase, count_out: list[int]) -> None:
+        def _count_item(item: vba_types.VBATypeBase) -> int:
             if isinstance(item, vba_types.VBAArray):
-                for elem in item:
-                    _collect(elem, count_out)
-                return
+                return sum(_count_item(elem) for elem in item)
             if isinstance(item, vba_types.VBANumericType):
-                count_out[0] += 1
+                return 1
+            return 0
 
-        total = [0]
-        for arg in args:
-            _collect(arg, total)
-        return vba_types.VBADouble(float(total[0]))
+        total = sum(_count_item(arg) for arg in args)
+        return vba_types.VBADouble(float(total))
 
     @staticmethod
     def index(
