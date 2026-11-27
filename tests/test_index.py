@@ -1,4 +1,3 @@
-from typing import Any
 import numpy as np
 import pytest
 import vba_types
