@@ -64,20 +64,15 @@ class WorksheetFunction:
     ) -> vba_types.VBADouble:
         """VBA WorksheetFunction.Count over numeric values."""
 
-        def _count_item(
-            item: vba_types.VBATypeBase,
-            is_top_level: bool,
-        ) -> int:
+        def _count_item(item: vba_types.VBATypeBase) -> int:
             if isinstance(item, vba_types.VBAArray):
-                return sum(
-                    _count_item(elem, is_top_level=False)
-                    for elem in item
-                )
+                return sum(_count_item(elem) for elem in item)
+            if isinstance(item, vba_types.VBABoolean):
+                return 0
             if isinstance(item, vba_types.VBANumericType):
                 return 1
-            if is_top_level and isinstance(item, vba_types.VBABoolean):
-                return 1
             return 0
+
 
         total = sum(_count_item(arg, is_top_level=True) for arg in args)
         return vba_types.VBADouble(float(total))
