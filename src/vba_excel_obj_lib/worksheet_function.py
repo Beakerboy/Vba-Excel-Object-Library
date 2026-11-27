@@ -258,6 +258,20 @@ class WorksheetFunction:
         return WorksheetFunction._to_vba_array(result)
 
     @staticmethod
+    def norm_s_dist(
+        z: vba_types.VBATypeBase,
+        cumulative: vba_types.VBATypeBase,
+    ) -> vba_types.VBADouble:
+        """VBA WorksheetFunction.Norm_S_Dist(z, cumulative)."""
+        z_val = float(z.value)
+        is_cdf = bool(cumulative.value)
+        if is_cdf:
+            result = float(scipy.stats.norm.cdf(z_val, loc=0.0, scale=1.0))
+        else:
+            result = float(scipy.stats.norm.pdf(z_val, loc=0.0, scale=1.0))
+        return vba_types.VBADouble(result)
+
+    @staticmethod
     def pi() -> vba_types.VBADouble:
         return vba_types.VBADouble(math.pi)
 
