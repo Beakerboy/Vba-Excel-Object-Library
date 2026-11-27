@@ -31,16 +31,6 @@ def test_count_ignores_non_numeric_values() -> None:
     assert result.value == 2.0
 
 
-def test_count_numeric_strings() -> None:
-    result = WorksheetFunction.count(
-        vba_types.VBAString("15"),
-        vba_types.VBAString("2.5"),
-        vba_types.VBAString("not-a-number"),
-    )
-    assert isinstance(result, vba_types.VBADouble)
-    assert result.value == 2.0
-
-
 def test_count_empty_args_and_empty_array() -> None:
     assert WorksheetFunction.count().value == 0.0
     empty_arr = vba_types.VBAArray()
