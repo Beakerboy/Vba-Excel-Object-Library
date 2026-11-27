@@ -64,27 +64,12 @@ class WorksheetFunction:
     ) -> vba_types.VBADouble:
         """VBA WorksheetFunction.Count over numeric values."""
 
-        def _is_number(val: Any) -> bool:
-            if val is None or isinstance(val, bool):
-                return False
-            if isinstance(val, (int, float)):
-                return True
-            if isinstance(val, str):
-                try:
-                    float(val.strip())
-                    return True
-                except ValueError:
-                    return False
-            return False
-
-        def _collect(item: Any, count_out: list[int]) -> None:
+        def _collect(item: vba_types.VBATypeBase, count_out: list[int]) -> None:
             if isinstance(item, vba_types.VBAArray):
                 for elem in item:
                     _collect(elem, count_out)
                 return
-            if not hasattr(item, "value"):
-                raise TypeMismatchError()
-            if _is_number(item.value):
+            if isinstance(item, vba_types.VBANumericType):
                 count_out[0] += 1
 
         total = [0]
