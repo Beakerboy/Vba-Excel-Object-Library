@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 import vba_types
 from vba_excel_obj_lib.worksheet_function import WorksheetFunction
