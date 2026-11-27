@@ -71,7 +71,7 @@ class WorksheetFunction:
 
     @staticmethod
     def index(
-        arg1: vba_types.VBATypeBase,
+        arg1: vba_types.VBAArray,
         arg2: vba_types.VBATypeBase | None = None,
         arg3: vba_types.VBATypeBase | None = None,
         arg4: vba_types.VBATypeBase | None = None,
