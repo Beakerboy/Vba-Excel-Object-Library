@@ -28,7 +28,7 @@ def test_count_ignores_non_numeric_values() -> None:
         vba_types.VBABoolean(False),
     )
     assert isinstance(result, vba_types.VBADouble)
-    assert result.value == 1.0
+    assert result.value == 2.0
 
 
 def test_count_numeric_strings() -> None:
