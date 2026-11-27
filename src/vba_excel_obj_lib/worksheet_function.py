@@ -3,8 +3,11 @@ import numpy as np
 import scipy
 import vba_types
 from typing import Any
-from vba_types.exceptions import SubscriptOutOfRangeError, TypeMismatchError
-
+from vba_types.exceptions import (
+    SubscriptOutOfRangeError,
+    TypeMismatchError,
+    VBAException
+)
 
 class WorksheetFunction:
     @staticmethod
@@ -22,6 +25,37 @@ class WorksheetFunction:
     @staticmethod
     def acos(arg1: vba_types.VBATypeBase) -> vba_types.VBADouble:
         return vba_types.VBADouble(math.acos(arg1.value))
+
+    @staticmethod
+    def chisq_inv(
+        probability: vba_types.VBATypeBase,
+        deg_freedom: vba_types.VBATypeBase,
+    ) -> vba_types.VBADouble:
+        """VBA WorksheetFunction.ChiSq_Inv(probability, deg_freedom)."""
+
+        def _to_float(val: vba_types.VBATypeBase) -> float:
+            raw = val.value
+            if isinstance(raw, bool):
+                raise TypeMismatchError()
+            if isinstance(raw, (int, float)):
+                return float(raw)
+            if isinstance(raw, str):
+                try:
+                    return float(raw.strip())
+                except ValueError as exc:
+                    raise TypeMismatchError() from exc
+            raise TypeMismatchError()
+
+        prob = _to_float(probability)
+        df = _to_float(deg_freedom)
+
+        if not math.isfinite(prob) or prob <= 0.0 or prob >= 1.0:
+            raise VBAException()
+        if not math.isfinite(df) or df < 1.0:
+            raise VBAException()
+
+        result = float(scipy.stats.chi2.ppf(prob, df=df))
+        return vba_types.VBADouble(result)
 
     @staticmethod
     def count(*args: vba_types.VBATypeBase) -> vba_types.VBADouble:
