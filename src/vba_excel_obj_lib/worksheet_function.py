@@ -59,15 +59,38 @@ class WorksheetFunction:
         return vba_types.VBADouble(result)
 
     @staticmethod
-    def count(*args: vba_types.VBATypeBase) -> vba_types.VBADouble:
-        vals = []
+    def count(
+        *args: vba_types.VBATypeBase,
+    ) -> vba_types.VBADouble:
+        """VBA WorksheetFunction.Count over numeric values."""
+
+        def _is_number(val: Any) -> bool:
+            if val is None or isinstance(val, bool):
+                return False
+            if isinstance(val, (int, float)):
+                return True
+            if isinstance(val, str):
+                try:
+                    float(val.strip())
+                    return True
+                except ValueError:
+                    return False
+            return False
+
+        def _collect(item: Any, count_out: list[int]) -> None:
+            if isinstance(item, vba_types.VBAArray):
+                for elem in item:
+                    _collect(elem, count_out)
+                return
+            if not hasattr(item, "value"):
+                raise TypeMismatchError()
+            if _is_number(item.value):
+                count_out[0] += 1
+
+        total = [0]
         for arg in args:
-            if isinstance(arg, vba_types.VBAArray):
-                new_list = list(map(lambda x: x.value, arg))
-                vals.extend(new_list)
-            else:
-                vals.append(arg.value)
-        return vba_types.VBADouble(len(vals))
+            _collect(arg, total)
+        return vba_types.VBADouble(float(total[0]))
 
     @staticmethod
     def index(
