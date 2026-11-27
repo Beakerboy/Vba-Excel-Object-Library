@@ -71,11 +71,11 @@ class WorksheetFunction:
 
     @staticmethod
     def index(
-        arg1: Any,
-        arg2: Any,
-        arg3: Any = None,
-        arg4: Any = None,
-    ) -> Any:
+        arg1: vba_types.VBATypeBase,
+        arg2: vba_types.VBATypeBase | None = None,
+        arg3: vba_types.VBATypeBase | None = None,
+        arg4: vba_types.VBATypeBase | None = None,
+    ) -> vba_types.VBATypeBase:
         """VBA WorksheetFunction.Index using VBAArray bounds."""
 
         def _is_vba_array(val: Any) -> bool:
@@ -155,47 +155,6 @@ class WorksheetFunction:
                 val, (list, tuple, np.ndarray)
             )
 
-        def _to_grid(container: Any) -> list[list[Any]]:
-            if isinstance(container, (list, tuple)) and container:
-                first = container[0]
-                if _is_seq(first):
-                    first_items = list(first)
-                    if first_items and _is_seq(first_items[0]):
-                        area_idx = (
-                            _to_index_int(arg4) - 1
-                            if arg4 is not None
-                            else 0
-                        )
-                        if area_idx < 0 or area_idx >= len(container):
-                            raise SubscriptOutOfRangeError()
-                        container = container[area_idx]
-
-            if _is_vba_array(container):
-                return _vba_array_to_grid(container)
-
-            if isinstance(container, np.ndarray):
-                if container.ndim == 1:
-                    return [list(container)]
-                if container.ndim == 2:
-                    return [list(row) for row in container]
-                raise SubscriptOutOfRangeError()
-
-            if isinstance(container, (list, tuple)):
-                items = list(container)
-            else:
-                return [[container]]
-
-            if not items:
-                raise SubscriptOutOfRangeError()
-
-            if _is_seq(items[0]):
-                return [
-                    list(row) if _is_seq(row) else [row]
-                    for row in items
-                ]
-
-            return [items]
-
         def _wrap_result(val: Any) -> Any:
             if isinstance(val, vba_types.VBATypeBase):
                 return val
@@ -208,7 +167,7 @@ class WorksheetFunction:
                 return vba_types.VBADouble(float(unwrapped))
             return val
 
-        grid = _to_grid(arg1)
+        grid = _vba_array_to_grid(arg1)
         num_rows = len(grid)
         num_cols = max(len(row) for row in grid)
 
