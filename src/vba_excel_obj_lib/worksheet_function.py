@@ -73,7 +73,7 @@ class WorksheetFunction:
                 return 1
             return 0
 
-        total = sum(_count_item(arg, is_top_level=True) for arg in args)
+        total = sum(_count_item(arg) for arg in args)
         return vba_types.VBADouble(float(total))
 
     @staticmethod
