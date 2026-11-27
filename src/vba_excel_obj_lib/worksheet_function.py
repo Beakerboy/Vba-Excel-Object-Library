@@ -9,6 +9,7 @@ from vba_types.exceptions import (
     VBAException
 )
 
+
 class WorksheetFunction:
     @staticmethod
     def average(*args: vba_types.VBATypeBase) -> vba_types.VBADouble:
